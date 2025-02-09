@@ -1,4 +1,4 @@
-@prism(type='vertex' name='script', version='1.0.0', description='A GLSL Shader that uses prism', author='Prism Developers', license='MIT')
+@prism(type='vertex', name='script', version='1.0.0', description='A GLSL Shader that uses prism', author='Prism Developers')
 
 @if(x_textures[0])
 in vec2 vTexCoord0;

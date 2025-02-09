@@ -43,6 +43,9 @@
         "streambuf": "cpp",
         "variant": "cpp",
         "fstream": "cpp",
-        "*.prism": "glsl"
+        "*.prism": "glsl",
+        "exception": "cpp",
+        "regex": "cpp",
+        "optional": "cpp"
     }
 }

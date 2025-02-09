@@ -27,7 +27,7 @@ namespace prism {
     class Processor {
     public:
         void populate(std::vector<ContextItem> items);
-        void load(std::string input);
+        void load(const std::string& input);
         std::string process();
     private:
         std::vector<ContextItem> m_items;
