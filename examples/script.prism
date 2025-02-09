@@ -18,7 +18,7 @@ uniform sampler2D uTex1;
 @if(x_fog) in vec4 vFog;
 @if(x_grayscale) in vec4 vGrayscale;
 
-@for(i:x_inputs) 
+@for(i in x_inputs) 
     in vec@{x_alpha ? 4 : 3} vInput@{i};
 @end
 
@@ -66,8 +66,8 @@ vec4 hookTexture2D(in sampler2D tex, in vec2 uv, in vec2 texSize) {
 @end
 
 void main() {
-    @for(i:2)
-        @if(x_textures[@{i}])
+    @for(i in 0..2)
+        @if(x_textures[i])
             @bool s = x_clamp[@{i}][0];
             @bool t = x_clamp[@{i}][1];
 
@@ -87,10 +87,10 @@ void main() {
 
             vec4 texVal@{i} = hookTexture2D(uTex@{i}, vTexCoordAdj@{i}, texSize@{i});
 
-            @if(x_masks[@{i}])
+            @if(x_masks[i])
                 vec2 maskSize@{i} = @calcTexSize(uTexMask@{i}, 0);
                 vec4 maskVal@{i} = hookTexture2D(uTexMask@{i}, vTexCoordAdj@{i}, maskSize@{i});
-                @if(x_blend[@{i}])
+                @if(x_blend[i])
                     vec4 blendVal@{i} = hookTexture2D(uTexBlend@{i}, vTexCoordAdj@{i}, texSize@{i});
                 @else
                     vec4 blendVal@{i} = vec4(0, 0, 0, 0);
@@ -105,17 +105,17 @@ void main() {
         texel.a = 1;
     @end
 
-    @for(c:x_2cyc ? 2 : 1)
-        @if(@{c} == 1)
+    @for(c in 0..(if x_2cyc then 2 else 1))
+        @if(c == 1)
             @if(x_alpha)
-                @if(x_c[@{c}][1][2] == @{SHADER_COMBINED})
+                @if(x_c[c][1][2] == SHADER_COMBINED)
                     texel.a = WRAP(texel.a, -1.01, 1.01);
                 @else
                     texel.a = WRAP(texel.a, -0.51, 1.51);
                 @end
             @end
 
-            @if(x_c[@{c}][0][2] == @{SHADER_COMBINED})
+            @if(x_c[c][0][2] == @{SHADER_COMBINED})
                 texel.rgb = WRAP(texel.rgb, -1.01, 1.01);
             @else
                 texel.rgb = WRAP(texel.rgb, -0.51, 1.51);
