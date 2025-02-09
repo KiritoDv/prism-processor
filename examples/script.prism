@@ -1,0 +1,125 @@
+@prism(type='vertex' name='script', version='1.0.0', description='A GLSL Shader that uses prism', author='Prism Developers', license='MIT')
+
+@if(x_textures[0])
+in vec2 vTexCoord0;
+uniform sampler2D uTex0;
+@end
+
+@if(x_textures[1])
+in vec2 vTexCoord1;
+uniform sampler2D uTex1;
+@end
+
+@if(x_clamp[0][0]) in vec2 vTexClampS0;
+@if(x_clamp[0][1]) in vec2 vTexClampT0;
+@if(x_clamp[1][0]) in vec2 vTexClampS1;
+@if(x_clamp[0][1]) in vec2 vTexClampT1;
+
+@if(x_fog) in vec4 vFog;
+@if(x_grayscale) in vec4 vGrayscale;
+
+@for(i:x_inputs) 
+    in vec@{x_alpha ? 4 : 3} vInput@{i};
+@end
+
+@if(x_masks[0]) uniform sampler2D uTexMask0;
+@if(x_masks[1]) uniform sampler2D uTexMask1;
+
+@if(x_blend[0]) uniform sampler2D uTexBlend0;
+@if(x_blend[1]) uniform sampler2D uTexBlend1;
+
+uniform int uFrame;
+uniform float uNoiseScale;
+
+#define TEX_OFFSET(off) tex2D(tex, texCoord - off / texSize)
+#define WRAP(x, low, high) mod((x)-(low), (high)-(low)) + (low)
+
+float random(in vec3 value) {
+    float random = dot(sin(value), vec3(12.9898, 78.233, 37.719));
+    return fract(sin(random) * 143758.5453);
+}
+
+vec4 fromLinear(vec4 linearRGB){
+    bvec3 cutoff = lessThan(linearRGB.rgb, vec3(0.0031308));
+    vec3 higher = vec3(1.055)*pow(linearRGB.rgb, vec3(1.0/2.4)) - vec3(0.055);
+    vec3 lower = linearRGB.rgb * vec3(12.92);
+    return vec4(mix(higher, lower, cutoff), linearRGB.a);
+}
+
+@if(x_three_point_filter)
+vec4 filter3point(in sampler2D tex, in vec2 texCoord, in vec2 texSize) {
+    vec2 offset = fract(texCoord*texSize - vec2(0.5));
+    offset -= step(1.0, offset.x + offset.y);
+    vec4 c0 = TEX_OFFSET(offset);
+    vec4 c1 = TEX_OFFSET(vec2(offset.x - sign(offset.x), offset.y));
+    vec4 c2 = TEX_OFFSET(vec2(offset.x, offset.y - sign(offset.y)));
+    return c0 + abs(offset.x)*(c1-c0) + abs(offset.y)*(c2-c0);
+}
+
+vec4 hookTexture2D(in sampler2D tex, in vec2 uv, in vec2 texSize) {
+    return filter3point(tex, uv, texSize);
+}
+@else
+vec4 hookTexture2D(in sampler2D tex, in vec2 uv, in vec2 texSize) {
+    return tex2D(tex, uv);
+}
+@end
+
+void main() {
+    @for(i:2)
+        @if(x_textures[@{i}])
+            @bool s = x_clamp[@{i}][0];
+            @bool t = x_clamp[@{i}][1];
+
+            vec2 texSize@{i} = @calcTexSize(uTex@{i}, 0);
+
+            @if(!s && !t)
+                vec2 vTexCoordAdj@{i} = vTexCoord@{i};
+            @else
+                @if(s && t)
+                    vec2 vTexCoordAdj@{i} = clamp(vTexCoord@{i}, 0.5 / texSize@{i}, vec2(vTexClampS@{i}, vTexClampT@{i}));
+                @elif(s)
+                    vec2 vTexCoordAdj@{i} = vec2(clamp(vTexCoord@{i}.s, 0.5 / texSize@{i}.s, vTexClampS@{i}), vTexCoord@{i}.t);
+                @else
+                    vec2 vTexCoordAdj@{i} = vec2(vTexCoord@{i}.s, clamp(vTexCoord@{i}.t, 0.5 / texSize@{i}.t, vTexClampT@{i}));
+                @end
+            @end
+
+            vec4 texVal@{i} = hookTexture2D(uTex@{i}, vTexCoordAdj@{i}, texSize@{i});
+
+            @if(x_masks[@{i}])
+                vec2 maskSize@{i} = @calcTexSize(uTexMask@{i}, 0);
+                vec4 maskVal@{i} = hookTexture2D(uTexMask@{i}, vTexCoordAdj@{i}, maskSize@{i});
+                @if(x_blend[@{i}])
+                    vec4 blendVal@{i} = hookTexture2D(uTexBlend@{i}, vTexCoordAdj@{i}, texSize@{i});
+                @else
+                    vec4 blendVal@{i} = vec4(0, 0, 0, 0);
+                @end
+                texVal@{i} = mix(texVal@{i}, blendVal@{i}, maskVal@{i}.a);
+            @end
+        @end
+    @end
+
+    vec4 texel;
+    @if(!x_alpha)
+        texel.a = 1;
+    @end
+
+    @for(c:x_2cyc ? 2 : 1)
+        @if(@{c} == 1)
+            @if(x_alpha)
+                @if(x_c[@{c}][1][2] == @{SHADER_COMBINED})
+                    texel.a = WRAP(texel.a, -1.01, 1.01);
+                @else
+                    texel.a = WRAP(texel.a, -0.51, 1.51);
+                @end
+            @end
+
+            @if(x_c[@{c}][0][2] == @{SHADER_COMBINED})
+                texel.rgb = WRAP(texel.rgb, -1.01, 1.01);
+            @else
+                texel.rgb = WRAP(texel.rgb, -0.51, 1.51);
+            @end
+        @end
+    @end
+}
