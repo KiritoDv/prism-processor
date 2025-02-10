@@ -51,61 +51,47 @@ void prism::Processor::load(const std::string& data) {
 
 int prism::Processor::evaluate(const std::shared_ptr<prism::ast::ASTNode>& node) {
     if (!node) return false;
-    switch (node->type) {
-        case ast::NodeType::VARIABLE: {
-            if(!this->m_items.contains(node->value)){
-                throw SyntaxError("Unknown variable " + node->value);
-            }
-            auto var = this->m_items.at(node->value);
-            if(is_type(var, int)){
-                return std::get<int>(var);
-            }
-            if(is_type(var, bool)){
-                return std::get<bool>(var);
-            }
-            throw SyntaxError("Invalid variable type on if");
+    if (is_type(node->node, prism::ast::VariableNode)) {
+        auto var = std::get<prism::ast::VariableNode>(node->node);
+        if(!this->m_items.contains(var.name)){
+            throw SyntaxError("Unknown variable " + var.name);
         }
-        case ast::NodeType::INTEGER:
-            return std::stoi(node->value);
-        case ast::NodeType::ARRAY_ACCESS: {
-            if(!node->root) {
-                return evaluate(node->left);
-            }
-
-            if(!this->m_items.contains(node->value)){
-                throw SyntaxError("Unknown variable " + node->value);
-            }
-
-            auto var = this->m_items.at(node->value);
-
-            if(!is_type(var, MTDArray)) {
-                throw SyntaxError(node->value + " is not an array");
-            }
-
-            auto array = std::get<MTDArray>(var);
-
-            switch (node->depth) {
-                case 1:
-                    return array.at(evaluate(node->left));
-                case 2:
-                    return array.at(evaluate(node->right),
-                                    evaluate(node->left));
-                case 3:
-                    return array.at(evaluate(node->right->right->left), evaluate(node->right->left),
-                                    evaluate(node->left));
-                case 4:
-                    return array.at(evaluate(node->right->right->right->left), evaluate(node->right->right->left),
-                                    evaluate(node->right->left), evaluate(node->left));
-            }
-
-            throw SyntaxError("We dont support array indexes bigger than 4");
+        auto value = this->m_items.at(var.name);
+        if(is_type(value, int)){
+            return std::get<int>(value);
         }
-        case ast::NodeType::OR:
-            return evaluate(node->left) == 1 || evaluate(node->right) == 1;
-        case prism::ast::NodeType::AND:
-            return evaluate(node->left) == 1 && evaluate(node->right) == 1;
-        case ast::NodeType::FLOAT:
-            break;
+        if(is_type(value, bool)){
+            return std::get<bool>(value);
+        }
+        throw SyntaxError("Invalid variable type on if");
+    } else if (is_type(node->node, prism::ast::IntegerNode)) {
+        return std::get<prism::ast::IntegerNode>(node->node).value;
+    } else if (is_type(node->node, prism::ast::ArrayAccessNode)) {
+        auto array = std::get<prism::ast::ArrayAccessNode>(node->node);
+        if(!this->m_items.contains(array.name->name)){
+            throw SyntaxError("Unknown variable " + array.name->name);
+        }
+        auto var = this->m_items.at(array.name->name);
+        if(!is_type(var, MTDArray)) {
+            throw SyntaxError(array.name->name + " is not an array");
+        }
+        auto arrayVar = std::get<MTDArray>(var);
+        auto indices = array.arrayIndices;
+        switch (indices->size()) {
+            case 1:
+                return arrayVar.at(indices->at(0)->value);
+            case 2:
+                return arrayVar.at(indices->at(1)->value, indices->at(0)->value);
+            case 3:
+                return arrayVar.at(indices->at(2)->value, indices->at(1)->value, indices->at(0)->value);
+            case 4:
+                return arrayVar.at(indices->at(3)->value, indices->at(2)->value, indices->at(1)->value, indices->at(0)->value);
+        }
+        throw SyntaxError("We dont support array indexes bigger than 4");
+    } else if (is_type(node->node, prism::ast::OrNode)) {
+        return evaluate(node->left) == 1 || evaluate(node->right) == 1;
+    } else if (is_type(node->node, prism::ast::AndNode)) {
+        return evaluate(node->left) == 1 && evaluate(node->right) == 1;
     }
     return false;
 }
@@ -310,9 +296,9 @@ void print_node(const prism::Node& node, int depth = 0) {
     for (int i = 0; i < depth; i++) {
         std::cout << ">";
     }
-    if (std::holds_alternative<prism::TextNode>(node.node)) {
+    if (is_type(node.node, prism::TextNode)) {
         std::cout << std::get<prism::TextNode>(node.node).text << std::endl;
-    } else if (std::holds_alternative<prism::IfNode>(node.node)) {
+    } else if (is_type(node.node, prism::IfNode)) {
         std::cout << "If" << std::endl;
         print_ast_node(std::get<prism::IfNode>(node.node).condition, depth + 1);
         for (const auto& child : node.children) {
@@ -322,7 +308,7 @@ void print_node(const prism::Node& node, int depth = 0) {
             std::cout << ">";
         }
         std::cout << "End" << std::endl;
-    } else if (std::holds_alternative<prism::ElseNode>(node.node)) {
+    } else if (is_type(node.node, prism::ElseNode)) {
         std::cout << "Else" << std::endl;
         for (const auto& child : node.children) {
             print_node(*child, depth + 1);

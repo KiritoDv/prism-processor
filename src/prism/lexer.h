@@ -20,6 +20,7 @@ namespace prism::lexer {
         NOT,         // '!'
         IN,          // in
         IF,          // if
+        THEN,        // then
         ELSE,        // else
         ELSEIF,      // elseif
         RANGE,       // ..

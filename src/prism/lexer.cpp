@@ -56,6 +56,9 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
                     }
                 }
                 break;
+            case 't':
+                if (peek() == 'h') { tokens.emplace_back(TokenType::THEN, "then"); pos += 4; }
+                break;
             case '.':
                 if (peek() == '.') { tokens.emplace_back(TokenType::RANGE, ".."); pos += 2; }
                 if (std::isalpha(peek())) { tokens.emplace_back(TokenType::IDENTIFIER, parseIdentifier()); }
