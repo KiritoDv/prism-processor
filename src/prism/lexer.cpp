@@ -31,14 +31,30 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
             case ',': tokens.emplace_back(TokenType::COMMA, ","); pos++; break;
             case '[': tokens.emplace_back(TokenType::LBRACKET, "["); pos++; break;
             case ']': tokens.emplace_back(TokenType::RBRACKET, "]"); pos++; break;
+            case '!': tokens.emplace_back(TokenType::NOT, "!"); pos++; break;
             case '|':
                 if (peek() == '|') { tokens.emplace_back(TokenType::OR, "||"); pos += 2; }
                 break;
             case '&':
                 if (peek() == '&') { tokens.emplace_back(TokenType::AND, "&&"); pos += 2; }
                 break;
+            case '=':
+                if (peek() == '=') { tokens.emplace_back(TokenType::EQUAL, "=="); pos += 2; }
+                break;
             case 'i':
                 if (peek() == 'n') { tokens.emplace_back(TokenType::IN, "in"); pos += 2; }
+                else if (peek() == 'f') { tokens.emplace_back(TokenType::IF, "if"); pos += 2; }
+                break;
+            case 'e':
+                if (peek() == 'l') {
+                    if (input.substr(pos, 4) == "else") {
+                        tokens.emplace_back(TokenType::ELSE, "else");
+                        pos += 4;
+                    } else if (input.substr(pos, 6) == "elseif") {
+                        tokens.emplace_back(TokenType::ELSEIF, "elseif");
+                        pos += 6;
+                    }
+                }
                 break;
             case '.':
                 if (peek() == '.') { tokens.emplace_back(TokenType::RANGE, ".."); pos += 2; }

@@ -16,7 +16,12 @@ namespace prism::lexer {
         COMMA,       // ','
         OR,          // '||'
         AND,         // '&&'
+        EQUAL,       // '=='
+        NOT,         // '!'
         IN,          // in
+        IF,          // if
+        ELSE,        // else
+        ELSEIF,      // elseif
         RANGE,       // ..
         END_OF_INPUT // End of script
     };

@@ -4,7 +4,7 @@
 #include "lexer.h"
 
 namespace prism::ast {
-    enum class NodeType { VARIABLE, INTEGER, FLOAT, ARRAY_ACCESS, OR, AND };
+    enum class NodeType { VARIABLE, INTEGER, FLOAT, ARRAY_ACCESS, OR, AND, IF };
 
     struct ASTNode {
         NodeType type;
@@ -16,6 +16,8 @@ namespace prism::ast {
 
         explicit ASTNode(NodeType t, std::string val = "", int depth = 0) : type(t), value(std::move(val)), depth(depth) {}
     };
+
+    void print_ast_node(std::shared_ptr<prism::ast::ASTNode> node, int depth = 0);
 
     class Parser {
     private:

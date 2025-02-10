@@ -46,6 +46,25 @@
         "*.prism": "glsl",
         "exception": "cpp",
         "regex": "cpp",
-        "optional": "cpp"
+        "optional": "cpp",
+        "unordered_map": "cpp",
+        "queue": "cpp",
+        "stack": "cpp",
+        "__hash_table": "cpp",
+        "deque": "cpp",
+        "forward_list": "cpp",
+        "span": "cpp",
+        "__node_handle": "cpp",
+        "charconv": "cpp",
+        "condition_variable": "cpp",
+        "memory": "cpp",
+        "iomanip": "cpp",
+        "iostream": "cpp",
+        "print": "cpp"
+    },
+    "cmake.debugConfig": {
+        "args": [
+            "../examples/script.prism"
+        ]
     }
 }

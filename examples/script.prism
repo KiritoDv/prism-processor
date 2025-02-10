@@ -19,7 +19,7 @@ uniform sampler2D uTex1;
 @if(x_grayscale) in vec4 vGrayscale;
 
 @for(i in x_inputs) 
-    in vec@{x_alpha ? 4 : 3} vInput@{i};
+    in vec@{if x_alpha then 4 else 3} vInput@{i};
 @end
 
 @if(x_masks[0]) uniform sampler2D uTexMask0;
@@ -115,7 +115,7 @@ void main() {
                 @end
             @end
 
-            @if(x_c[c][0][2] == @{SHADER_COMBINED})
+            @if(x_c[c][0][2] == SHADER_COMBINED)
                 texel.rgb = WRAP(texel.rgb, -1.01, 1.01);
             @else
                 texel.rgb = WRAP(texel.rgb, -0.51, 1.51);
