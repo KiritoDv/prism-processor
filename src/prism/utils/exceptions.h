@@ -1,16 +1,17 @@
 #pragma once
 
 #include <exception>
+#include <utility>
 
 namespace prism {
     class SyntaxError : public std::exception {
     public:
-        SyntaxError(const char* message) : m_message(message) {}
-        const char* what() const noexcept override {
-            return m_message;
+        SyntaxError(std::string message) : m_message(std::move(message)) {}
+        [[nodiscard]] const char* what() const noexcept override {
+            return m_message.c_str();
         }
     private:
-        const char* m_message;
+        std::string m_message;
     };
 
     class RuntimeError : public std::exception {

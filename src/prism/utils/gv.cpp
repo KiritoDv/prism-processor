@@ -2,9 +2,9 @@
 
 #include <regex>
 #include <sstream>
-#include "utils/exceptions.h"
+#include "exceptions.h"
 
-std::vector<std::string> prism::gv::split(const std::string& line, const char delimiter) {
+std::vector<std::string> prism::gv::split(const std::string line, const char delimiter) {
     std::vector<std::string> result;
     std::stringstream ss(line);
     std::string item;
@@ -14,7 +14,7 @@ std::vector<std::string> prism::gv::split(const std::string& line, const char de
     return result;
 }
 
-std::vector<std::string> prism::gv::parenthesis(const std::string& line) {
+std::vector<std::string> prism::gv::parenthesis(const std::string line) {
     std::vector<std::string> result;
     std::regex re(R"(\(([^)]+)\))");
     std::sregex_iterator next(line.begin(), line.end(), re);
@@ -27,7 +27,7 @@ std::vector<std::string> prism::gv::parenthesis(const std::string& line) {
     return result;
 }
 
-std::vector<std::string> prism::gv::fn_args(const std::string& line) {
+std::vector<std::string> prism::gv::fn_args(const std::string line) {
     std::vector<std::string> result;
     std::regex re(R"(\s*,\s*)");
     std::sregex_token_iterator first{line.begin(), line.end(), re, -1}, last;
@@ -37,12 +37,14 @@ std::vector<std::string> prism::gv::fn_args(const std::string& line) {
     return result;
 }
 
-std::optional<std::string> prism::gv::key_arg(const std::string& line, const std::string key) {
-    std::regex re(key + R"(=([^,]+))");
-    std::smatch match;
-    if (std::regex_search(line, match, re)) {
-        return match[1].str();
+std::unordered_map<std::string, std::optional<std::string>> prism::gv::il_args(const std::string line) {
+    std::unordered_map<std::string, std::optional<std::string>> result;
+    auto args = fn_args(line);
+    for (const auto& arg : args) {
+        auto parts = split(arg, '=');
+        if(!parts.empty()) {
+            result[parts[0]] = parts[1];
+        }
     }
-
-    return std::nullopt;
+    return result;
 }

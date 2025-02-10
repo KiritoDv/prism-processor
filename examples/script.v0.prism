@@ -1,0 +1,23 @@
+@prism(type='vertex', name='script', version='1.0.0', description='A GLSL Shader that uses prism', author='Prism Developers')
+
+@if(o_textures[0])
+in vec2 vTexCoord0;
+uniform sampler2D uTex0;
+@end
+
+@if(o_textures[1])
+in vec2 vTexCoord1;
+uniform sampler2D uTex1;
+@end
+
+@if(o_clamp[0][0]) in vec2 vTexClampS0;
+@if(o_clamp[0][1]) in vec2 vTexClampT0;
+@if(o_clamp[1][0]) in vec2 vTexClampS1;
+@if(o_clamp[1][1]) in vec2 vTexClampT1;
+
+@for(i in 0..2)
+    @if(x_textures[i])
+        @bool s = x_clamp[@{i}][0];
+        @bool t = x_clamp[@{i}][1];
+    @end
+@end
