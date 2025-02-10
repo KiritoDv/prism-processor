@@ -9,25 +9,27 @@ namespace prism::ast {
     struct VariableNode { std::string name; };
     struct IntegerNode { int value; };
     struct FloatNode { float value; };
-    struct ArrayAccessNode {
+    template<typename T> struct ArrayAccessNode {
         std::shared_ptr<VariableNode> name;
-        std::shared_ptr<std::vector<std::shared_ptr<IntegerNode>>> arrayIndices;
+        std::shared_ptr<std::vector<std::shared_ptr<T>>> arrayIndices;
     };
-    struct OrNode { };
-    struct AndNode { };
-    struct IfNode {
-        // condition = left, body = right
-        std::shared_ptr<std::vector<std::shared_ptr<IfNode>>> elseIfs;
-        std::shared_ptr<IfNode> elseBody;
+    template<typename T> struct OrNode { std::shared_ptr<T> left, right; };
+    template<typename T> struct AndNode { std::shared_ptr<T> left, right; };
+    template<typename T> struct ElseIfNode {
+        std::shared_ptr<T> condition;
+        std::shared_ptr<T> body;
     };
-    struct EqualNode { };
-    struct InNode { };
+    template<typename T> struct IfNode {
+        std::shared_ptr<T> condition;
+        std::shared_ptr<T> body;
+        std::shared_ptr<std::vector<std::shared_ptr<ElseIfNode<T>>>> elseIfs;
+        std::shared_ptr<T> elseBody;
+    };
+    template<typename T> struct EqualNode { std::shared_ptr<T> left, right; };
+    template<typename T> struct InNode { std::shared_ptr<T> left, right; };
 
     struct ASTNode {
-    public:
-        ASTNode(std::variant<VariableNode, IntegerNode, FloatNode, ArrayAccessNode, OrNode, AndNode, IfNode, EqualNode, InNode> node) : node(std::move(node)) {}
-        std::variant<VariableNode, IntegerNode, FloatNode, ArrayAccessNode, OrNode, AndNode, IfNode, EqualNode, InNode> node;
-        std::shared_ptr<ASTNode> left, right;
+        std::variant<VariableNode, IntegerNode, FloatNode, ArrayAccessNode<ASTNode>, OrNode<ASTNode>, AndNode<ASTNode>, IfNode<ASTNode>, EqualNode<ASTNode>, InNode<ASTNode>> node;
     };
 
     void print_ast_node(std::shared_ptr<prism::ast::ASTNode> node, int depth = 0);

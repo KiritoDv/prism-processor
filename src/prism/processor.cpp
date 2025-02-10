@@ -66,8 +66,8 @@ int prism::Processor::evaluate(const std::shared_ptr<prism::ast::ASTNode>& node)
         throw SyntaxError("Invalid variable type on if");
     } else if (is_type(node->node, prism::ast::IntegerNode)) {
         return std::get<prism::ast::IntegerNode>(node->node).value;
-    } else if (is_type(node->node, prism::ast::ArrayAccessNode)) {
-        auto array = std::get<prism::ast::ArrayAccessNode>(node->node);
+    } else if (is_type(node->node, prism::ast::ArrayAccessNode<prism::ast::ASTNode>)) {
+        auto array = std::get<prism::ast::ArrayAccessNode<prism::ast::ASTNode>>(node->node);
         if(!this->m_items.contains(array.name->name)){
             throw SyntaxError("Unknown variable " + array.name->name);
         }
@@ -79,19 +79,21 @@ int prism::Processor::evaluate(const std::shared_ptr<prism::ast::ASTNode>& node)
         auto indices = array.arrayIndices;
         switch (indices->size()) {
             case 1:
-                return arrayVar.at(indices->at(0)->value);
+                return arrayVar.at(evaluate(indices->at(0)));
             case 2:
-                return arrayVar.at(indices->at(1)->value, indices->at(0)->value);
+                return arrayVar.at(evaluate(indices->at(1)), evaluate(indices->at(0)));
             case 3:
-                return arrayVar.at(indices->at(2)->value, indices->at(1)->value, indices->at(0)->value);
+                return arrayVar.at(evaluate(indices->at(2)), evaluate(indices->at(1)), evaluate(indices->at(0)));
             case 4:
-                return arrayVar.at(indices->at(3)->value, indices->at(2)->value, indices->at(1)->value, indices->at(0)->value);
+                return arrayVar.at(evaluate(indices->at(3)), evaluate(indices->at(2)), evaluate(indices->at(1)), evaluate(indices->at(0)));
         }
         throw SyntaxError("We dont support array indexes bigger than 4");
-    } else if (is_type(node->node, prism::ast::OrNode)) {
-        return evaluate(node->left) == 1 || evaluate(node->right) == 1;
-    } else if (is_type(node->node, prism::ast::AndNode)) {
-        return evaluate(node->left) == 1 && evaluate(node->right) == 1;
+    } else if (is_type(node->node, prism::ast::OrNode<prism::ast::ASTNode>)) {
+        auto orNode = std::get<prism::ast::OrNode<prism::ast::ASTNode>>(node->node);
+        return evaluate(orNode.left) == 1 || evaluate(orNode.right) == 1;
+    } else if (is_type(node->node, prism::ast::AndNode<prism::ast::ASTNode>)) {
+        auto andNode = std::get<prism::ast::AndNode<prism::ast::ASTNode>>(node->node);
+        return evaluate(andNode.left) == 1 && evaluate(andNode.right) == 1;
     }
     return false;
 }
