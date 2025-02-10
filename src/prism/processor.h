@@ -4,6 +4,7 @@
 #include <string>
 #include <variant>
 #include <sstream>
+#include <unordered_map>
 
 #include "lexer.h"
 #include "ast.h"

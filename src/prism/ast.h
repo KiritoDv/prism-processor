@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stack>
+#include <memory>
 #include "lexer.h"
 
 namespace prism::ast {

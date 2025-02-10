@@ -49,48 +49,6 @@ void prism::Processor::load(const std::string& data) {
     SPDLOG_INFO("Prism script: {} v{} by {}", name, version, author);
 }
 
-std::string trim(const std::string& str) {
-    auto start = std::find_if(str.begin(), str.end(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    });
-
-    auto end = std::find_if(str.rbegin(), str.rend(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }).base();
-
-    return (start < end) ? std::string(start, end) : "";
-}
-
-prism::ExpressionType ev_expr(const std::string& raw){
-    const auto line = trim(raw);
-
-    if(line.rfind("@if", 0) == 0){
-        return prism::ExpressionType::If;
-    }
-
-    if(line.rfind("@else", 0) == 0){
-        return prism::ExpressionType::Else;
-    }
-
-    if(line.rfind("@elseif", 0) == 0){
-        return prism::ExpressionType::ElseIf;
-    }
-
-    if(line.rfind("@for", 0) == 0){
-        return prism::ExpressionType::For;
-    }
-
-    if(line.rfind("@end", 0) == 0){
-        return prism::ExpressionType::End;
-    }
-
-    if(line[0] == '@'){
-        return prism::ExpressionType::Variable;
-    }
-
-    return prism::ExpressionType::None;
-}
-
 int prism::Processor::evaluate(const std::shared_ptr<prism::ast::ASTNode>& node) {
     if (!node) return false;
     switch (node->type) {
@@ -150,54 +108,6 @@ int prism::Processor::evaluate(const std::shared_ptr<prism::ast::ASTNode>& node)
             break;
     }
     return false;
-}
-
-void prism::Processor::evaluate_if(const std::string& line) {
-    m_context.scope = ScopeType::If;
-    m_context.skipUntilEnd = false;
-
-    size_t pos = 3;
-
-    auto raw = gv::parenthesis(line.substr(pos));
-    lexer::Lexer eval(raw[0]);
-    auto tokens = eval.tokenize();
-    ast::Parser parser(tokens);
-    auto ast = parser.parse();
-    auto result = evaluate(ast) == 1;
-
-    pos += eval.length() + 2;
-    if(result){
-        if(line.length() > pos){
-            m_output << trim(line.substr(pos, line.length() - pos)) << "\n";
-            m_context.scope = ScopeType::None;
-        }
-    } else {
-        m_context.skipUntilEnd = true;
-    }
-}
-
-void prism::Processor::evaluate_for(const std::string& line) {
-    m_context.scope = ScopeType::For;
-    m_context.skipUntilEnd = false;
-
-    size_t pos = 4;
-
-    auto raw = gv::parenthesis(line.substr(pos));
-    lexer::Lexer eval(raw[0]);
-    auto tokens = eval.tokenize();
-    ast::Parser parser(tokens);
-    auto ast = parser.parse();
-    auto result = evaluate(ast) == 1;
-
-    pos += eval.length() + 2;
-    if(result){
-        if(line.length() > pos){
-            m_output << trim(line.substr(pos, line.length() - pos)) << "\n";
-            m_context.scope = ScopeType::None;
-        }
-    } else {
-        m_context.skipUntilEnd = true;
-    }
 }
 
 std::string get_parenthesis(std::string::iterator& c, std::string::iterator end){
