@@ -181,19 +181,19 @@ std::string get_keyword(std::string::iterator& c, std::string::iterator end){
 }
 
 prism::Node parse(std::string input) {
-    std::shared_ptr<prism::Node> root = std::make_shared<prism::Node>(prism::TextNode(""), nullptr);
+    std::shared_ptr<prism::Node> root = std::make_shared<prism::Node>(prism::TextNode{""}, nullptr);
     std::shared_ptr<prism::Node> current = root;
     auto c = input.begin();
     auto previous = c;
     while (c != input.end()) {
         if (*c == '@') {
-            current->children.push_back(std::make_shared<prism::Node>(prism::TextNode(std::string(previous, c)), current));
+            current->children.push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c)}, current));
             c++;
             if (*c == '{') {
                 auto ast = parse_accolade(c, input.end());
                 // get_accolade(c, input.end());
                 // auto ast = nullptr;
-                current->children.push_back(std::make_shared<prism::Node>(prism::VariableNode(ast), current));
+                current->children.push_back(std::make_shared<prism::Node>(prism::VariableNode{ast}, current));
             }
             auto expr = get_keyword(c, input.end());
             previous = c;
@@ -201,7 +201,7 @@ prism::Node parse(std::string input) {
                 auto ast = parse_parentesis(c, input.end());
                 // get_parenthesis(c, input.end());
                 // auto ast = nullptr;
-                current->children.push_back(std::make_shared<prism::Node>(prism::IfNode(ast), current));
+                current->children.push_back(std::make_shared<prism::Node>(prism::IfNode{ast}, current));
 
                 current = current->children.back();
                 previous = c;
@@ -218,14 +218,14 @@ prism::Node parse(std::string input) {
                     while (*c != '\n') {
                         c++;
                     }
-                    current->children.push_back(std::make_shared<prism::Node>(prism::TextNode(std::string(previous, c)), current));
+                    current->children.push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c)}, current));
                     previous = c;
                     current = current->parent;
                 }
             } else if (expr == "else") {
                 current = current->parent;
                 previous = c;
-                current->children.push_back(std::make_shared<prism::Node>(prism::ElseNode(), current));
+                current->children.push_back(std::make_shared<prism::Node>(prism::ElseNode{}, current));
                 current = current->children.back();
                 previous = c;
                 bool sameLine = false;
@@ -240,7 +240,7 @@ prism::Node parse(std::string input) {
                     while (*c != '\n') {
                         c++;
                     }
-                    current->children.push_back(std::make_shared<prism::Node>(prism::TextNode(std::string(previous, c)), current));
+                    current->children.push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c)}, current));
                     previous = c;
                     current = current->parent;
                 }
@@ -250,7 +250,7 @@ prism::Node parse(std::string input) {
                 // auto ast = parse_parentesis(c, input.end());
                 get_parenthesis(c, input.end());
                 auto ast = nullptr;
-                current->children.push_back(std::make_shared<prism::Node>(prism::ElseIfNode(ast), current));
+                current->children.push_back(std::make_shared<prism::Node>(prism::ElseIfNode{ast}, current));
                 current = current->children.back();
                 previous = c;
                 bool sameLine = false;
@@ -265,7 +265,7 @@ prism::Node parse(std::string input) {
                     while (*c != '\n') {
                         c++;
                     }
-                    current->children.push_back(std::make_shared<prism::Node>(prism::TextNode(std::string(previous, c)), current));
+                    current->children.push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c)}, current));
                     previous = c;
                     current = current->parent;
                 }
@@ -273,7 +273,7 @@ prism::Node parse(std::string input) {
                 // auto ast = parse_parentesis(c, input.end());
                 get_parenthesis(c, input.end());
                 auto ast = nullptr;
-                current->children.push_back(std::make_shared<prism::Node>(prism::ForNode(ast), current));
+                current->children.push_back(std::make_shared<prism::Node>(prism::ForNode{ast}, current));
                 current = current->children.back();
                 previous = c;
                 bool sameLine = false;
@@ -288,7 +288,7 @@ prism::Node parse(std::string input) {
                     while (*c != '\n') {
                         c++;
                     }
-                    current->children.push_back(std::make_shared<prism::Node>(prism::TextNode(std::string(previous, c)), current));
+                    current->children.push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c)}, current));
                     previous = c;
                     current = current->parent;
                 }
