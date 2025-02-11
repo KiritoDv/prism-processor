@@ -2,7 +2,9 @@
 #include "utils/exceptions.h"
 
 bool isKeyWord(const std::string& input, size_t pos) {
-    return input.substr(pos, 2) != "in" && input.substr(pos, 2) != "if" && input.substr(pos, 4) != "else" && input.substr(pos, 6) != "elseif" && input.substr(pos, 4) != "then";
+    return input.substr(pos, 2) != "in" && input.substr(pos, 2) != "if" && input.substr(pos, 4) != "else" && 
+            input.substr(pos, 6) != "elseif" && input.substr(pos, 4) != "then" && input.substr(pos, 4) != "true" &&
+            input.substr(pos, 5) != "false";
 }
 
 std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
@@ -62,6 +64,10 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
                 break;
             case 't':
                 if (peek() == 'h') { tokens.emplace_back(TokenType::THEN, "then"); pos += 4; }
+                else if (peek() == 'r') { tokens.emplace_back(TokenType::TRUE, "true"); pos += 4; }
+                break;
+            case 'f':
+                if (peek() == 'a') { tokens.emplace_back(TokenType::FALSE, "false"); pos += 5; }
                 break;
             case '.':
                 if (peek() == '.') { tokens.emplace_back(TokenType::RANGE, ".."); pos += 2; }

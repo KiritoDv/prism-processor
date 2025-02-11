@@ -68,6 +68,18 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parsePrimary() {
         return std::make_shared<ASTNode>(IntegerNode{std::stoi(previous().value)});
     }
 
+    if (match(lexer::TokenType::FLOAT)) {
+        return std::make_shared<ASTNode>(FloatNode{std::stof(previous().value)});
+    }
+
+    if (match(lexer::TokenType::TRUE)) {
+        return std::make_shared<ASTNode>(IntegerNode{1});
+    }
+
+    if (match(lexer::TokenType::FALSE)) {
+        return std::make_shared<ASTNode>(IntegerNode{0});
+    }
+
     if (match(lexer::TokenType::IF)) {
         auto condition = parse();
         expect(lexer::TokenType::THEN);  // Ensure 'then' keyword

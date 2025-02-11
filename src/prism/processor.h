@@ -23,18 +23,30 @@ namespace prism {
         std::vector<size_t> dimensions;
 
         T& at(int x){
+            if (x >= dimensions[0]) {
+                throw RuntimeError("Index out of bounds");
+            }
             return ((T*) ptr)[x];
         }
 
         T& at(int x, int y){
+            if (x >= dimensions[0] || y >= dimensions[1]) {
+                throw RuntimeError("Index out of bounds");
+            }
             return ((T*) ptr)[x * dimensions[1] + y];
         }
 
         T& at(int x, int y, int z){
+            if (x >= dimensions[0] || y >= dimensions[1] || z >= dimensions[2]) {
+                throw RuntimeError("Index out of bounds");
+            }
             return ((T*) ptr)[x * dimensions[1] * dimensions[2] + y * dimensions[2] + z];
         }
 
         T& at(int x, int y, int z, int w){
+            if (x >= dimensions[0] || y >= dimensions[1] || z >= dimensions[2] || w >= dimensions[3]) {
+                throw RuntimeError("Index out of bounds");
+            }
             return ((T*) ptr)[x * dimensions[1] * dimensions[2] * dimensions[3] + y * dimensions[2] * dimensions[3] + z * dimensions[3] + w];
         }
     };
@@ -44,7 +56,7 @@ namespace prism {
         size_t end;
     };
 
-    typedef std::variant<bool, int, float, MTDArray<bool>, MTDArray<int>, MTDArray<float>, GeneratedRange> ContextTypes;
+    typedef std::variant<bool, int, float, MTDArray<bool>, MTDArray<int>, MTDArray<float>, GeneratedRange, std::string> ContextTypes;
     typedef std::unordered_map<std::string, ContextTypes> ContextItems;
 
     enum class ScopeType {
@@ -73,10 +85,12 @@ namespace prism {
     struct ForNode { std::shared_ptr<ast::ASTNode> condition; };
     struct EndNode {};
 
+    typedef std::variant<TextNode, VariableNode, IfNode, ElseIfNode, ElseNode, ForNode, EndNode> NodeType;
+
     class Node {
     public:
-        Node(std::variant<TextNode, VariableNode, IfNode, ElseIfNode, ElseNode, ForNode, EndNode> node, std::shared_ptr<Node> parent) : node(std::move(node)), parent(parent) {}
-        std::variant<TextNode, VariableNode, IfNode, ElseIfNode, ElseNode, ForNode, EndNode> node;
+        Node(NodeType node, std::shared_ptr<Node> parent) : node(std::move(node)), parent(parent) {}
+        NodeType node;
         std::vector<std::shared_ptr<Node>> children;
         std::shared_ptr<Node> parent;
         int depth = 0;
@@ -91,6 +105,7 @@ namespace prism {
     public:
         void populate(ContextItems items);
         void load(const std::string& input);
+        prism::Node parse(std::string input);
         ContextTypes evaluate(const std::shared_ptr<prism::ast::ASTNode>& node);
         std::string process();
         ContextItems getTypes() { return this->m_items; }

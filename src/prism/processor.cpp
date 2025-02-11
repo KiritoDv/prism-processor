@@ -6,6 +6,30 @@
 #include "utils/gv.h"
 
 void prism::Processor::populate(ContextItems items) {
+    if(items.contains("@if")){
+        throw SyntaxError("Reserved keyword if");
+    }
+    
+    if(items.contains("@else")){
+        throw SyntaxError("Reserved keyword else");
+    }
+    
+    if(items.contains("@elseif")){
+        throw SyntaxError("Reserved keyword elseif");
+    }
+    
+    if(items.contains("@for")){
+        throw SyntaxError("Reserved keyword for");
+    }
+    
+    if(items.contains("@end")){
+        throw SyntaxError("Reserved keyword end");
+    }
+    
+    if(items.contains("@prism")){
+        throw SyntaxError("Reserved keyword prism");
+    }
+
     m_items = items;
 }
 
@@ -329,7 +353,7 @@ std::string get_keyword(std::string::iterator& c, std::string::iterator end){
     return {start, c};
 }
 
-prism::Node parse(std::string input) {
+prism::Node prism::Processor::parse(std::string input) {
     std::shared_ptr<prism::Node> root = std::make_shared<prism::Node>(prism::TextNode{""}, nullptr);
     std::shared_ptr<prism::Node> current = root;
     auto c = input.begin();
@@ -346,7 +370,9 @@ prism::Node parse(std::string input) {
             }
             auto expr = get_keyword(c, input.end());
             previous = c;
-            if (expr == "if") {
+            if(m_items.contains(expr)){
+                current->children.push_back(std::make_shared<prism::Node>(prism::TextNode{std::get<std::string>(m_items[expr])}, current));
+            } else if (expr == "if") {
                 auto ast = parse_parentesis(c, input.end());
                 // get_parenthesis(c, input.end());
                 // auto ast = nullptr;

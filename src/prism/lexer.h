@@ -24,6 +24,8 @@ namespace prism::lexer {
         ELSE,        // else
         ELSEIF,      // elseif
         RANGE,       // ..
+        TRUE,        // true
+        FALSE,       // false
         END_OF_INPUT // End of script
     };
 
