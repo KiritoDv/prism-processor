@@ -38,10 +38,20 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseEqual() {
 }
 
 std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseIn() {
-    auto node = parsePrimary();
+    auto node = parseRange();
     while (match(lexer::TokenType::IN)) {
-        auto right = parsePrimary();
+        auto right = parseRange();
         auto parent = std::make_shared<prism::ast::ASTNode>(InNode{node, right});
+        node = parent;
+    }
+    return node;
+}
+
+std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseRange() {
+    auto node = parsePrimary();
+    while (match(lexer::TokenType::RANGE)) {
+        auto right = parsePrimary();
+        auto parent = std::make_shared<prism::ast::ASTNode>(RangeNode{node, right});
         node = parent;
     }
     return node;
@@ -79,8 +89,7 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parsePrimary() {
     }
 
     if (match(lexer::TokenType::NOT)) {
-        int bp = 0;
-        // TODO: Unimplemented
+        return std::make_shared<ASTNode>(NotNode{parsePrimary()});
     }
 
     if (match(lexer::TokenType::IDENTIFIER)) {
@@ -142,6 +151,39 @@ void prism::ast::print_ast_node(std::shared_ptr<prism::ast::ASTNode> node, int d
         for (const auto& index : *std::get<ArrayAccessNode>(node->node).arrayIndices) {
             print_ast_node(index, depth + 1);
         }
+        return;
+    } else if (is_type(node->node, NotNode)) {
+        std::cout << indent << "NOT" << std::endl;
+        print_ast_node(std::get<NotNode>(node->node).node, depth + 1);
+        return;
+    } else if (is_type(node->node, EqualNode)) {
+        auto equalNode = std::get<EqualNode>(node->node);
+        std::cout << indent << "EQUAL" << std::endl;
+        print_ast_node(equalNode.left, depth + 1);
+        print_ast_node(equalNode.right, depth + 1);
+        return;
+    } else if (is_type(node->node, RangeNode)) {
+        auto rangeNode = std::get<RangeNode>(node->node);
+        std::cout << indent << "RANGE" << std::endl;
+        print_ast_node(rangeNode.left, depth + 1);
+        print_ast_node(rangeNode.right, depth + 1);
+        return;
+    } else if (is_type(node->node, InNode)) {
+        auto inNode = std::get<InNode>(node->node);
+        std::cout << indent << "IN" << std::endl;
+        print_ast_node(inNode.left, depth + 1);
+        print_ast_node(inNode.right, depth + 1);
+        return;
+    } else if (is_type(node->node, IfNode)) {
+        auto ifNode = std::get<IfNode>(node->node);
+        std::cout << indent << "IF" << std::endl;
+        print_ast_node(ifNode.condition, depth + 1);
+        print_ast_node(ifNode.body, depth + 1);
+        for (const auto& elseIf : *ifNode.elseIfs) {
+            print_ast_node(elseIf->condition, depth + 1);
+            print_ast_node(elseIf->body, depth + 1);
+        }
+        print_ast_node(ifNode.elseBody, depth + 1);
         return;
     } else if (is_type(node->node, OrNode)) {
         auto orNode = std::get<OrNode>(node->node);

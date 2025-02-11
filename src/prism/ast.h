@@ -27,9 +27,11 @@ namespace prism::ast {
         std::shared_ptr<ASTNode> elseBody;
     };
     struct EqualNode { std::shared_ptr<ASTNode> left, right; };
+    struct RangeNode { std::shared_ptr<ASTNode> left, right; };
     struct InNode { std::shared_ptr<ASTNode> left, right; };
+    struct NotNode { std::shared_ptr<ASTNode> node; };
 
-    typedef std::variant<VariableNode, IntegerNode, FloatNode, ArrayAccessNode, OrNode, AndNode, IfNode, EqualNode, InNode> ASTTypes;
+    typedef std::variant<VariableNode, IntegerNode, FloatNode, ArrayAccessNode, OrNode, AndNode, IfNode, EqualNode, InNode, RangeNode, NotNode> ASTTypes;
 
     struct ASTNode {
         ASTTypes node;
@@ -51,6 +53,7 @@ namespace prism::ast {
         std::shared_ptr<ASTNode> parseOr();
         std::shared_ptr<ASTNode> parseAnd();
         std::shared_ptr<ASTNode> parseEqual();
+        std::shared_ptr<ASTNode> parseRange();
         std::shared_ptr<ASTNode> parseIn();
         std::shared_ptr<ASTNode> parsePrimary();
         bool match(lexer::TokenType type);

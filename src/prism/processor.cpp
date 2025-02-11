@@ -233,9 +233,9 @@ prism::Node parse(std::string input) {
             } else if (expr == "elseif") {
                 current = current->parent;
                 previous = c;
-                // auto ast = parse_parentesis(c, input.end());
-                get_parenthesis(c, input.end());
-                auto ast = nullptr;
+                auto ast = parse_parentesis(c, input.end());
+                // get_parenthesis(c, input.end());
+                // auto ast = nullptr;
                 current->children.push_back(std::make_shared<prism::Node>(prism::ElseIfNode{ast}, current));
                 current = current->children.back();
                 previous = c;
@@ -256,9 +256,9 @@ prism::Node parse(std::string input) {
                     current = current->parent;
                 }
             } else if (expr == "for") {
-                // auto ast = parse_parentesis(c, input.end());
-                get_parenthesis(c, input.end());
-                auto ast = nullptr;
+                auto ast = parse_parentesis(c, input.end());
+                // get_parenthesis(c, input.end());
+                // auto ast = nullptr;
                 current->children.push_back(std::make_shared<prism::Node>(prism::ForNode{ast}, current));
                 current = current->children.back();
                 previous = c;
@@ -319,6 +319,7 @@ void print_node(const prism::Node& node, int depth = 0) {
         std::cout << "End" << std::endl;
     } else if (std::holds_alternative<prism::ElseIfNode>(node.node)) {
         std::cout << "ElseIf" << std::endl;
+        print_ast_node(std::get<prism::ElseIfNode>(node.node).condition, depth + 1);
         for (const auto& child : node.children) {
             print_node(*child, depth + 1);
         }
@@ -328,6 +329,7 @@ void print_node(const prism::Node& node, int depth = 0) {
         std::cout << "End" << std::endl;
     } else if (std::holds_alternative<prism::ForNode>(node.node)) {
         std::cout << "For" << std::endl;
+        print_ast_node(std::get<prism::ForNode>(node.node).condition, depth + 1);
         for (const auto& child : node.children) {
             print_node(*child, depth + 1);
         }

@@ -18,7 +18,7 @@ uniform sampler2D uTex1;
 @if(x_fog) in vec4 vFog;
 @if(x_grayscale) in vec4 vGrayscale;
 
-@for(i in x_inputs) 
+@for(i in 0..x_inputs) 
     in vec@{if x_alpha then 4 else 3} vInput@{i};
 @end
 

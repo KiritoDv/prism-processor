@@ -1,6 +1,10 @@
 #include "lexer.h"
 #include "utils/exceptions.h"
 
+bool isKeyWord(const std::string& input, size_t pos) {
+    return input.substr(pos, 2) != "in" && input.substr(pos, 2) != "if" && input.substr(pos, 4) != "else" && input.substr(pos, 6) != "elseif" && input.substr(pos, 4) != "then";
+}
+
 std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
     std::vector<prism::lexer::Token> tokens;
 
@@ -12,7 +16,7 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
             continue;
         }
 
-        if (input.substr(pos, 2) != "in" && std::isalpha(current) || current == '_') {
+        if (isKeyWord(input, pos) && std::isalpha(current) || current == '_') {
             tokens.emplace_back(TokenType::IDENTIFIER, parseIdentifier());
             continue;
         }
@@ -61,7 +65,6 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
                 break;
             case '.':
                 if (peek() == '.') { tokens.emplace_back(TokenType::RANGE, ".."); pos += 2; }
-                if (std::isalpha(peek())) { tokens.emplace_back(TokenType::IDENTIFIER, parseIdentifier()); }
                 break;
             case ';': pos++; break;
             default:
