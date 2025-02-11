@@ -550,8 +550,10 @@ std::string prism::Processor::evaluate_node(std::shared_ptr<std::vector<std::sha
             auto value = evaluate(var.name);
             if(is_type(value, bool)){
                 result += std::get<bool>(value) ? "true" : "false";
+                return result;
             } else if (is_type(value, int)) {
                 result += std::to_string(std::get<int>(value));
+                return result;
             }
             throw prism::SyntaxError("Unsupported type");
         } else if (is_type(child->node, prism::IfNode)) {
