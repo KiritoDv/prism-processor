@@ -162,14 +162,12 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         bool resRight = false;
         if(is_type(left, bool)) {
             resLeft = std::get<bool>(left);
+        } else if(is_type(left, int)) {
+            resLeft = std::get<int>(left) == 1;
         }
         if(is_type(right, bool)) {
             resRight = std::get<bool>(right);
-        }
-        if(is_type(left, int)) {
-            resLeft = std::get<int>(left) == 1;
-        }
-        if(is_type(right, int)) {
+        } else if(is_type(right, int)) {
             resRight = std::get<int>(right) == 1;
         }
         if(is_type(left, float) || is_type(right, float)) {
@@ -184,16 +182,15 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         bool resRight = false;
         if(is_type(left, bool)) {
             resLeft = std::get<bool>(left);
+        } else if(is_type(left, int)) {
+            resLeft = std::get<int>(left) == 1;
         }
         if(is_type(right, bool)) {
             resRight = std::get<bool>(right);
-        }
-        if(is_type(left, int)) {
-            resLeft = std::get<int>(left) == 1;
-        }
-        if(is_type(right, int)) {
+        } else if(is_type(right, int)) {
             resRight = std::get<int>(right) == 1;
         }
+
         if(is_type(left, float) || is_type(right, float)) {
             throw SyntaxError("Invalid AND operation, float are not supported");
         }

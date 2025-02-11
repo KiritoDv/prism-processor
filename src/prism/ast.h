@@ -36,7 +36,7 @@ namespace prism::ast {
     struct ASTNode {
         ASTTypes node;
 
-        ASTNode(ASTTypes node) : node(std::move(node)) {}
+        explicit ASTNode(ASTTypes node) : node(std::move(node)) {}
     };
 
     void print_ast_node(std::shared_ptr<ASTNode> node, int depth = 0);
