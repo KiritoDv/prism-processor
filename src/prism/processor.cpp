@@ -2,8 +2,6 @@
 
 #include <spdlog/spdlog.h>
 #include <sstream>
-#include <regex>
-
 #include "utils/exceptions.h"
 #include "utils/gv.h"
 
@@ -43,8 +41,8 @@ void prism::Processor::load(const std::string& data) {
         m_lines.erase(m_lines.begin());
     }
     m_input = "";
-    for(const auto& line : m_lines){
-        m_input += line + "\n";
+    for(const auto& n_line : m_lines){
+        m_input += n_line + "\n";
     }
     SPDLOG_INFO("Prism script: {} v{} by {}", name, version, author);
 }
@@ -66,8 +64,8 @@ int prism::Processor::evaluate(const std::shared_ptr<prism::ast::ASTNode>& node)
         throw SyntaxError("Invalid variable type on if");
     } else if (is_type(node->node, prism::ast::IntegerNode)) {
         return std::get<prism::ast::IntegerNode>(node->node).value;
-    } else if (is_type(node->node, prism::ast::ArrayAccessNode<prism::ast::ASTNode>)) {
-        auto array = std::get<prism::ast::ArrayAccessNode<prism::ast::ASTNode>>(node->node);
+    } else if (is_type(node->node, prism::ast::ArrayAccessNode)) {
+        auto array = std::get<prism::ast::ArrayAccessNode>(node->node);
         if(!this->m_items.contains(array.name->name)){
             throw SyntaxError("Unknown variable " + array.name->name);
         }
@@ -88,11 +86,11 @@ int prism::Processor::evaluate(const std::shared_ptr<prism::ast::ASTNode>& node)
                 return arrayVar.at(evaluate(indices->at(3)), evaluate(indices->at(2)), evaluate(indices->at(1)), evaluate(indices->at(0)));
         }
         throw SyntaxError("We dont support array indexes bigger than 4");
-    } else if (is_type(node->node, prism::ast::OrNode<prism::ast::ASTNode>)) {
-        auto orNode = std::get<prism::ast::OrNode<prism::ast::ASTNode>>(node->node);
+    } else if (is_type(node->node, prism::ast::OrNode)) {
+        auto orNode = std::get<prism::ast::OrNode>(node->node);
         return evaluate(orNode.left) == 1 || evaluate(orNode.right) == 1;
-    } else if (is_type(node->node, prism::ast::AndNode<prism::ast::ASTNode>)) {
-        auto andNode = std::get<prism::ast::AndNode<prism::ast::ASTNode>>(node->node);
+    } else if (is_type(node->node, prism::ast::AndNode)) {
+        auto andNode = std::get<prism::ast::AndNode>(node->node);
         return evaluate(andNode.left) == 1 && evaluate(andNode.right) == 1;
     }
     return false;
@@ -117,7 +115,7 @@ std::string get_parenthesis(std::string::iterator& c, std::string::iterator end)
         throw prism::SyntaxError("Unterminated parenthesis");
     }
     c++;
-    return std::string(start, c);
+    return {start, c};
 }
 
 std::shared_ptr<prism::ast::ASTNode> parse_parentesis(std::string::iterator& c, std::string::iterator end){
@@ -165,7 +163,7 @@ std::string get_keyword(std::string::iterator& c, std::string::iterator end){
     while (std::find(std::begin(match), std::end(match), *c) != std::end(match) && c != end) {
         c++;
     }
-    return std::string(start, c);
+    return {start, c};
 }
 
 prism::Node parse(std::string input) {

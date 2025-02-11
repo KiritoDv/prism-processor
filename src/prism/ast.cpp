@@ -62,17 +62,17 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parsePrimary() {
         auto condition = parse();
         expect(lexer::TokenType::THEN);  // Ensure 'then' keyword
         auto body = parse();
-        std::shared_ptr<std::vector<std::shared_ptr<ElseIfNode<ASTNode>>>> elseIfs = std::make_shared<std::vector<std::shared_ptr<ElseIfNode<ASTNode>>>>();
+        std::shared_ptr<std::vector<std::shared_ptr<ElseIfNode>>> elseIfs = std::make_shared<std::vector<std::shared_ptr<ElseIfNode>>>();
         while (match(lexer::TokenType::ELSEIF)) {
             auto elseIfCondition = parse();
             expect(lexer::TokenType::THEN);  // Ensure 'then' keyword
             auto elseIfBody = parse();
-            elseIfs->push_back(std::make_shared<ElseIfNode<ASTNode>>(ElseIfNode<ASTNode>{elseIfCondition, elseIfBody}));
+            elseIfs->push_back(std::make_shared<ElseIfNode>(ElseIfNode{elseIfCondition, elseIfBody}));
         }
 
         if (match(lexer::TokenType::ELSE)) {
             auto elseBody = parse();
-            return std::make_shared<ASTNode>(IfNode<ASTNode>{condition, body, elseIfs, elseBody});
+            return std::make_shared<ASTNode>(IfNode{condition, body, elseIfs, elseBody});
         }
         
         throw std::runtime_error("Unexpected token");
@@ -85,7 +85,7 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parsePrimary() {
 
     if (match(lexer::TokenType::IDENTIFIER)) {
         std::string varName = previous().value;
-        std::shared_ptr<VariableNode> variable = std::make_shared<VariableNode>(VariableNode(varName));
+        std::shared_ptr<VariableNode> variable = std::make_shared<VariableNode>(VariableNode{varName});
         
         if (!match(lexer::TokenType::LBRACKET)) {
             return std::make_shared<ASTNode>(*variable);
@@ -137,20 +137,20 @@ void prism::ast::print_ast_node(std::shared_ptr<prism::ast::ASTNode> node, int d
     } else if (is_type(node->node, FloatNode)) {
         std::cout << indent << "Float: " << std::get<FloatNode>(node->node).value << std::endl;
         return;
-    } else if (is_type(node->node, ArrayAccessNode<ASTNode>)) {
-        std::cout << indent << "Array Access: " << std::get<ArrayAccessNode<ASTNode>>(node->node).name->name << std::endl;
-        for (auto& index : *std::get<ArrayAccessNode<ASTNode>>(node->node).arrayIndices) {
-            print_ast_node(std::shared_ptr<ASTNode>(index.get()), depth + 1);
+    } else if (is_type(node->node, ArrayAccessNode)) {
+        std::cout << indent << "Array Access: " << std::get<ArrayAccessNode>(node->node).name->name << std::endl;
+        for (const auto& index : *std::get<ArrayAccessNode>(node->node).arrayIndices) {
+            print_ast_node(index, depth + 1);
         }
         return;
-    } else if (is_type(node->node, OrNode<ASTNode>)) {
-        auto orNode = std::get<OrNode<ASTNode>>(node->node);
+    } else if (is_type(node->node, OrNode)) {
+        auto orNode = std::get<OrNode>(node->node);
         std::cout << indent << "OR" << std::endl;
         print_ast_node(orNode.left, depth + 1);
         print_ast_node(orNode.right, depth + 1);
         return;
-    } else if (is_type(node->node, AndNode<ASTNode>)) {
-        auto andNode = std::get<AndNode<ASTNode>>(node->node);
+    } else if (is_type(node->node, AndNode)) {
+        auto andNode = std::get<AndNode>(node->node);
         std::cout << indent << "AND" << std::endl;
         print_ast_node(andNode.left, depth + 1);
         print_ast_node(andNode.right, depth + 1);
