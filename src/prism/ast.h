@@ -31,7 +31,7 @@ namespace prism::ast {
     struct InNode { std::shared_ptr<ASTNode> left, right; };
     struct NotNode { std::shared_ptr<ASTNode> node; };
 
-    typedef std::variant<VariableNode, IntegerNode, FloatNode, ArrayAccessNode, OrNode, AndNode, IfNode, EqualNode, InNode, RangeNode, NotNode> ASTTypes;
+    typedef std::variant<VariableNode, IntegerNode, FloatNode, ArrayAccessNode, OrNode, AndNode, IfNode, ElseIfNode, EqualNode, InNode, RangeNode, NotNode> ASTTypes;
 
     struct ASTNode {
         ASTTypes node;

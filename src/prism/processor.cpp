@@ -47,7 +47,31 @@ void prism::Processor::load(const std::string& data) {
     SPDLOG_INFO("Prism script: {} v{} by {}", name, version, author);
 }
 
-int prism::Processor::evaluate(const std::shared_ptr<prism::ast::ASTNode>& node) {
+template <typename T>
+prism::ContextTypes ReadArrayByType(prism::Processor* proc, prism::ast::ArrayAccessNode& array) {
+    auto var = proc->getTypes().at(array.name->name);
+    if(!is_type(var, prism::MTDArray<T>)) {
+        throw prism::SyntaxError(array.name->name + " is not an array");
+    }
+    prism::MTDArray<T> arrayVar = std::get<prism::MTDArray<T>>(var);
+    auto indices = array.arrayIndices;
+#define g_idx(x) std::get<int>(proc->evaluate(indices->at(x)))
+    switch (indices->size()) {
+        case 1: {
+            return arrayVar.at(g_idx(0));
+        }
+        case 2:
+            return arrayVar.at(g_idx(1), g_idx(0));
+        case 3:
+            return arrayVar.at(g_idx(2), g_idx(1), g_idx(0));
+        case 4:
+            return arrayVar.at(g_idx(3), g_idx(2), g_idx(1), g_idx(0));
+    }
+#undef g_idx
+    throw prism::SyntaxError("We dont support array indexes bigger than 4");
+};
+
+prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast::ASTNode>& node) {
     if (!node) return false;
     if (is_type(node->node, prism::ast::VariableNode)) {
         auto var = std::get<prism::ast::VariableNode>(node->node);
@@ -55,44 +79,191 @@ int prism::Processor::evaluate(const std::shared_ptr<prism::ast::ASTNode>& node)
             throw SyntaxError("Unknown variable " + var.name);
         }
         auto value = this->m_items.at(var.name);
-        if(is_type(value, int)){
-            return std::get<int>(value);
-        }
         if(is_type(value, bool)){
             return std::get<bool>(value);
         }
-        throw SyntaxError("Invalid variable type on if");
+        if(is_type(value, int)){
+            return std::get<int>(value);
+        }
+        if(is_type(value, float)){
+            return std::get<float>(value);
+        }
+        if(is_type(value, MTDArray<bool>)){
+            return std::get<MTDArray<bool>>(value);
+        }
+        if(is_type(value, MTDArray<int>)){
+            return std::get<MTDArray<int>>(value);
+        }
+        if(is_type(value, MTDArray<float>)){
+            return std::get<MTDArray<float>>(value);
+        }
+        throw SyntaxError("Unsupported type");
     } else if (is_type(node->node, prism::ast::IntegerNode)) {
         return std::get<prism::ast::IntegerNode>(node->node).value;
+    } else if (is_type(node->node, prism::ast::FloatNode)) {
+        return std::get<prism::ast::FloatNode>(node->node).value;
     } else if (is_type(node->node, prism::ast::ArrayAccessNode)) {
         auto array = std::get<prism::ast::ArrayAccessNode>(node->node);
         if(!this->m_items.contains(array.name->name)){
             throw SyntaxError("Unknown variable " + array.name->name);
         }
         auto var = this->m_items.at(array.name->name);
-        if(!is_type(var, MTDArray)) {
-            throw SyntaxError(array.name->name + " is not an array");
+        if(is_type(var, MTDArray<bool>)){
+            return ReadArrayByType<bool>(this, array);
         }
-        auto arrayVar = std::get<MTDArray>(var);
-        auto indices = array.arrayIndices;
-        switch (indices->size()) {
-            case 1:
-                return arrayVar.at(evaluate(indices->at(0)));
-            case 2:
-                return arrayVar.at(evaluate(indices->at(1)), evaluate(indices->at(0)));
-            case 3:
-                return arrayVar.at(evaluate(indices->at(2)), evaluate(indices->at(1)), evaluate(indices->at(0)));
-            case 4:
-                return arrayVar.at(evaluate(indices->at(3)), evaluate(indices->at(2)), evaluate(indices->at(1)), evaluate(indices->at(0)));
+        if(is_type(var, MTDArray<int>)){
+            return ReadArrayByType<int>(this, array);
         }
-        throw SyntaxError("We dont support array indexes bigger than 4");
+        if(is_type(var, MTDArray<float>)){
+            return ReadArrayByType<float>(this, array);
+        }
+        
+        throw SyntaxError("Invalid array access");
+    } else if (is_type(node->node, prism::ast::InNode)) {
+        auto inNode = std::get<prism::ast::InNode>(node->node);
+        auto left = evaluate(inNode.left);
+        auto right = evaluate(inNode.right);
+        if(is_type(left, prism::MTDArray<int>) && is_type(right, int)){
+            auto leftArray = std::get<prism::MTDArray<int>>(left);
+            auto rightValue = std::get<int>(right);
+            for(auto i = 0; i < leftArray.dimensions[0]; i++){
+                if(leftArray.at(i) == rightValue){
+                    return true;
+                }
+            }
+            return false;
+        }
+        if(is_type(left, prism::MTDArray<bool>) && is_type(right, bool)){
+            auto leftArray = std::get<prism::MTDArray<bool>>(left);
+            auto rightValue = std::get<bool>(right);
+            for(auto i = 0; i < leftArray.dimensions[0]; i++){
+                if(leftArray.at(i) == rightValue){
+                    return true;
+                }
+            }
+            return false;
+        }
+        if(is_type(left, prism::MTDArray<float>) && is_type(right, float)){
+            auto leftArray = std::get<prism::MTDArray<float>>(left);
+            auto rightValue = std::get<float>(right);
+            for(auto i = 0; i < leftArray.dimensions[0]; i++){
+                if(leftArray.at(i) == rightValue){
+                    return true;
+                }
+            }
+            return false;
+        }
+        throw SyntaxError("Invalid IN operation");
     } else if (is_type(node->node, prism::ast::OrNode)) {
         auto orNode = std::get<prism::ast::OrNode>(node->node);
-        return evaluate(orNode.left) == 1 || evaluate(orNode.right) == 1;
+        auto left = evaluate(orNode.left);
+        auto right = evaluate(orNode.right);
+        bool resLeft = false;
+        bool resRight = false;
+        if(is_type(left, bool)) {
+            resLeft = std::get<bool>(left);
+        }
+        if(is_type(right, bool)) {
+            resRight = std::get<bool>(right);
+        }
+        if(is_type(left, int)) {
+            resLeft = std::get<int>(left) == 1;
+        }
+        if(is_type(right, int)) {
+            resRight = std::get<int>(right) == 1;
+        }
+        if(is_type(left, float) || is_type(right, float)) {
+            throw SyntaxError("Invalid AND operation, float are not supported");
+        }
+        return resLeft && resRight;
     } else if (is_type(node->node, prism::ast::AndNode)) {
         auto andNode = std::get<prism::ast::AndNode>(node->node);
-        return evaluate(andNode.left) == 1 && evaluate(andNode.right) == 1;
-    }
+        auto left = evaluate(andNode.left);
+        auto right = evaluate(andNode.right);
+        bool resLeft = false;
+        bool resRight = false;
+        if(is_type(left, bool)) {
+            resLeft = std::get<bool>(left);
+        }
+        if(is_type(right, bool)) {
+            resRight = std::get<bool>(right);
+        }
+        if(is_type(left, int)) {
+            resLeft = std::get<int>(left) == 1;
+        }
+        if(is_type(right, int)) {
+            resRight = std::get<int>(right) == 1;
+        }
+        if(is_type(left, float) || is_type(right, float)) {
+            throw SyntaxError("Invalid AND operation, float are not supported");
+        }
+        return resLeft && resRight;
+    } else if (is_type(node->node, prism::ast::EqualNode)) {
+        auto equalNode = std::get<prism::ast::AndNode>(node->node);
+        auto left = evaluate(equalNode.left);
+        auto right = evaluate(equalNode.right);
+        if(is_type(left, float) || is_type(right, float)) {
+            throw SyntaxError("Invalid EQUAL operation, float are not supported");
+        }
+
+        if(is_type(left, bool) && is_type(right, bool)) {
+            return std::get<bool>(left) == std::get<bool>(right);
+        }
+
+        if(is_type(left, int) && is_type(right, int)) {
+            return std::get<int>(left) == std::get<int>(right);
+        }
+
+        if(is_type(left, int) && is_type(right, bool)) {
+            return std::get<int>(left) == (std::get<bool>(right) ? 1 : 0);
+        }
+
+        if(is_type(left, bool) && is_type(right, int)) {
+            return (std::get<bool>(left) ? 1 : 0) == std::get<int>(right);
+        }
+
+        throw SyntaxError("Invalid EQUAL operation");
+    } else if (is_type(node->node, prism::ast::RangeNode)) {
+        auto rangeNode = std::get<prism::ast::RangeNode>(node->node);
+        auto start = evaluate(rangeNode.left);
+        auto end = evaluate(rangeNode.right);
+        if(!is_type(start, int) || !is_type(end, int)){
+            throw SyntaxError("Invalid range");
+        }
+
+        auto entries = std::vector<int>();
+        for(int i = std::get<int>(start); i < std::get<int>(end); i++){
+            entries.push_back(i);
+        }
+
+        return prism::MTDArray<int>{(uintptr_t) entries.data(), std::vector<size_t>{ entries.size() }};
+    } else if (is_type(node->node, prism::ast::IfNode)) {
+        auto ifNode = std::get<prism::ast::IfNode>(node->node);
+        auto condition = evaluate(ifNode.condition);
+
+        if(is_type(condition, bool)) {
+            return std::get<bool>(condition);
+        }
+
+        if(is_type(condition, int)) {
+            return std::get<int>(condition) == 1;
+        }
+
+        throw SyntaxError("Invalid IF condition");
+    } else if (is_type(node->node, prism::ast::ElseIfNode)) {
+        auto ifNode = std::get<prism::ast::ElseIfNode>(node->node);
+        auto condition = evaluate(ifNode.condition);
+
+        if(is_type(condition, bool)) {
+            return std::get<bool>(condition);
+        }
+
+        if(is_type(condition, int)) {
+            return std::get<int>(condition) == 1;
+        }
+
+        throw SyntaxError("Invalid IF condition");
+    } 
     return false;
 }
 

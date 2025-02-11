@@ -22,8 +22,8 @@ int main(int argc, char** argv) {
     int o_clamp[2][2] = { { 1, 1, }, { 1, 1 } };
 
     prism::ContextItems vars = {
-        { "o_textures", M_ARRAY(o_textures) },
-        { "o_clamp", M_ARRAY(o_clamp, 2, 2) }
+        { "o_textures", M_ARRAY(o_textures, int) },
+        { "o_clamp", M_ARRAY(o_clamp, int, 2, 2) }
     };
 
     prism::Processor processor;
