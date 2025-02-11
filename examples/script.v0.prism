@@ -23,3 +23,9 @@ uniform sampler2D uTex1;
         in vec2 vTexClampT@{i};
     @end
 @end
+
+in vec2 vTexClampS0;
+in vec2 vTexClampT0;
+in vec2 vTexClampS1;
+in vec2 vTexClampT1;
+in vec2 vTexClampS0;

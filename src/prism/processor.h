@@ -110,7 +110,7 @@ namespace prism {
         void load(const std::string& input);
         prism::Node parse(std::string input);
         ContextTypes evaluate(const std::shared_ptr<prism::ast::ASTNode>& node);
-        std::string evaluate_node(std::shared_ptr<std::vector<std::shared_ptr<prism::Node>>>& children);
+        void evaluate_node(std::shared_ptr<std::vector<std::shared_ptr<prism::Node>>>& children);
         std::string process();
         ContextItems getTypes() { return this->m_items; }
     private:

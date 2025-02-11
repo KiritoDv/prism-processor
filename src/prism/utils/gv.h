@@ -11,6 +11,21 @@ namespace prism::gv {
     std::vector<std::string> parenthesis(const std::string line);
     std::vector<std::string> fn_args(const std::string line);
     std::unordered_map<std::string, std::optional<std::string>> il_args(const std::string line);
+    inline void ltrim(std::string &s) {
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+            return !std::isspace(ch);
+        }));
+    }
+    inline void rtrim(std::string &s) {
+        s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+            return !std::isspace(ch);
+        }).base(), s.end());
+    }
+    inline std::string trim(std::string cpy) {
+        ltrim(cpy);
+        rtrim(cpy);
+        return cpy;
+    }
     template <typename T> T get(const std::string& arg) {
         // String
         if(arg[0] == '\'') {
