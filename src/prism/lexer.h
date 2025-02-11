@@ -17,6 +17,7 @@ namespace prism::lexer {
         OR,          // '||'
         AND,         // '&&'
         EQUAL,       // '=='
+        ASSIGN,      // '='
         NOT,         // '!'
         IN,          // in
         IF,          // if

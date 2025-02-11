@@ -4,7 +4,18 @@
 #define is_type(var, type) std::holds_alternative<type>((var))
 
 std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parse() {
-    return parseOr();
+    return parseAssign();
+}
+
+std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseAssign() {
+    auto node = parseOr();
+    while (match(lexer::TokenType::ASSIGN)) {
+        auto var = std::get<VariableNode>(node->node);
+        auto right = parseOr();
+        auto parent = std::make_shared<prism::ast::ASTNode>(AssignNode{var, right});
+        node = parent;
+    }
+    return node;
 }
 
 std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseOr() {

@@ -16,8 +16,10 @@ uniform sampler2D uTex1;
 @if(o_clamp[1][1]) in vec2 vTexClampT1;
 
 @for(i in 0..2)
-    @if(x_textures[i])
-        @bool s = x_clamp[@{i}][0];
-        @bool t = x_clamp[@{i}][1];
+    @if(o_textures[i])
+        @{s = o_clamp[i][0]}
+        @{t = o_clamp[i][1]}
+        in vec2 vTexClampS@{i};
+        in vec2 vTexClampT@{i};
     @end
 @end

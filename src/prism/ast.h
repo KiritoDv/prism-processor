@@ -14,6 +14,10 @@ namespace prism::ast {
         std::shared_ptr<VariableNode> name;
         std::shared_ptr<std::vector<std::shared_ptr<ASTNode>>> arrayIndices;
     };
+    struct AssignNode {
+        VariableNode name;
+        std::shared_ptr<ASTNode> value;
+    };
     struct OrNode { std::shared_ptr<ASTNode> left, right; };
     struct AndNode { std::shared_ptr<ASTNode> left, right; };
     struct ElseIfNode {
@@ -31,7 +35,7 @@ namespace prism::ast {
     struct InNode { std::shared_ptr<ASTNode> left, right; };
     struct NotNode { std::shared_ptr<ASTNode> node; };
 
-    typedef std::variant<VariableNode, IntegerNode, FloatNode, ArrayAccessNode, OrNode, AndNode, IfNode, ElseIfNode, EqualNode, InNode, RangeNode, NotNode> ASTTypes;
+    typedef std::variant<VariableNode, IntegerNode, FloatNode, ArrayAccessNode, AssignNode, OrNode, AndNode, IfNode, ElseIfNode, EqualNode, InNode, RangeNode, NotNode> ASTTypes;
 
     struct ASTNode {
         ASTTypes node;
@@ -50,6 +54,7 @@ namespace prism::ast {
         explicit Parser(std::vector<lexer::Token> tokenList) : tokens(std::move(tokenList)) {}
         std::shared_ptr<ASTNode> parse();
     private:
+        std::shared_ptr<ASTNode> parseAssign();
         std::shared_ptr<ASTNode> parseOr();
         std::shared_ptr<ASTNode> parseAnd();
         std::shared_ptr<ASTNode> parseEqual();

@@ -46,10 +46,12 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
                 break;
             case '=':
                 if (peek() == '=') { tokens.emplace_back(TokenType::EQUAL, "=="); pos += 2; }
+                else { tokens.emplace_back(TokenType::ASSIGN, "="); pos++; }
                 break;
             case 'i':
                 if (peek() == 'n') { tokens.emplace_back(TokenType::IN, "in"); pos += 2; }
                 else if (peek() == 'f') { tokens.emplace_back(TokenType::IF, "if"); pos += 2; }
+                else { tokens.emplace_back(TokenType::IDENTIFIER, parseIdentifier()); }
                 break;
             case 'e':
                 if (peek() == 'l') {
@@ -60,14 +62,18 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
                         tokens.emplace_back(TokenType::ELSEIF, "elseif");
                         pos += 6;
                     }
+                    else { tokens.emplace_back(TokenType::IDENTIFIER, parseIdentifier()); }
                 }
+                else { tokens.emplace_back(TokenType::IDENTIFIER, parseIdentifier()); }
                 break;
             case 't':
-                if (peek() == 'h') { tokens.emplace_back(TokenType::THEN, "then"); pos += 4; }
-                else if (peek() == 'r') { tokens.emplace_back(TokenType::TRUE, "true"); pos += 4; }
+                if (input.substr(pos, 4) == "then") { tokens.emplace_back(TokenType::THEN, "then"); pos += 4; }
+                else if (input.substr(pos, 4) == "true") { tokens.emplace_back(TokenType::TRUE, "true"); pos += 4; }
+                else { tokens.emplace_back(TokenType::IDENTIFIER, parseIdentifier()); }
                 break;
             case 'f':
-                if (peek() == 'a') { tokens.emplace_back(TokenType::FALSE, "false"); pos += 5; }
+                if (input.substr(pos, 5) == "false") { tokens.emplace_back(TokenType::FALSE, "false"); pos += 5; }
+                else { tokens.emplace_back(TokenType::IDENTIFIER, parseIdentifier()); }
                 break;
             case '.':
                 if (peek() == '.') { tokens.emplace_back(TokenType::RANGE, ".."); pos += 2; }

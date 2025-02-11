@@ -12,7 +12,7 @@
 #include "utils/exceptions.h"
 
 #define is_type(var, type) std::holds_alternative<type>((var))
-#define M_ARRAY(arr, type, ...) prism::MTDArray<type> { (uintptr_t) &arr, std::vector<size_t>(__VA_ARGS__) }
+#define M_ARRAY(arr, type, ...) prism::MTDArray<type> { (uintptr_t) &arr, std::vector<size_t>{__VA_ARGS__} }
 
 namespace prism {
 
@@ -56,7 +56,9 @@ namespace prism {
         size_t end;
     };
 
-    typedef std::variant<bool, int, float, MTDArray<bool>, MTDArray<int>, MTDArray<float>, GeneratedRange, std::string> ContextTypes;
+    struct Enumerate { std::string name; GeneratedRange range; };
+
+    typedef std::variant<bool, int, float, MTDArray<bool>, MTDArray<int>, MTDArray<float>, GeneratedRange, std::string, Enumerate> ContextTypes;
     typedef std::unordered_map<std::string, ContextTypes> ContextItems;
 
     enum class ScopeType {
@@ -77,21 +79,22 @@ namespace prism {
         End
     };
 
+    struct Node;
+    struct RootNode { std::shared_ptr<std::vector<std::shared_ptr<Node>>> children; };
     struct TextNode { std::string text; };
     struct VariableNode { std::shared_ptr<ast::ASTNode> name; };
-    struct IfNode { std::shared_ptr<ast::ASTNode> condition; };
-    struct ElseIfNode { std::shared_ptr<ast::ASTNode> condition; };
-    struct ElseNode {};
-    struct ForNode { std::shared_ptr<ast::ASTNode> condition; };
+    struct ElseNode { std::shared_ptr<std::vector<std::shared_ptr<Node>>> children; };
+    struct ElseIfNode { std::shared_ptr<ast::ASTNode> condition; std::shared_ptr<std::vector<std::shared_ptr<Node>>> children; };
+    struct IfNode { std::shared_ptr<ast::ASTNode> condition; std::shared_ptr<std::vector<std::shared_ptr<Node>>> children; std::shared_ptr<ElseNode> elseBody; std::vector<std::shared_ptr<ElseIfNode>> elseIfs; };
+    struct ForNode { std::shared_ptr<ast::ASTNode> condition; std::shared_ptr<std::vector<std::shared_ptr<Node>>> children;};
     struct EndNode {};
 
-    typedef std::variant<TextNode, VariableNode, IfNode, ElseIfNode, ElseNode, ForNode, EndNode> NodeType;
+    typedef std::variant<RootNode, TextNode, VariableNode, IfNode, ElseIfNode, ElseNode, ForNode, EndNode> NodeType;
 
     class Node {
     public:
         Node(NodeType node, std::shared_ptr<Node> parent) : node(std::move(node)), parent(parent) {}
         NodeType node;
-        std::vector<std::shared_ptr<Node>> children;
         std::shared_ptr<Node> parent;
         int depth = 0;
     };
@@ -107,6 +110,7 @@ namespace prism {
         void load(const std::string& input);
         prism::Node parse(std::string input);
         ContextTypes evaluate(const std::shared_ptr<prism::ast::ASTNode>& node);
+        std::string evaluate_node(std::shared_ptr<std::vector<std::shared_ptr<prism::Node>>>& children);
         std::string process();
         ContextItems getTypes() { return this->m_items; }
     private:
