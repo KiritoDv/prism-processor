@@ -228,12 +228,7 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
             throw SyntaxError("Invalid range");
         }
 
-        auto entries = std::vector<int>();
-        for(int i = std::get<int>(start); i < std::get<int>(end); i++){
-            entries.push_back(i);
-        }
-
-        return prism::MTDArray<int>{(uintptr_t) entries.data(), std::vector<size_t>{ entries.size() }};
+        return prism::GeneratedRange{(size_t) std::get<int>(start), (size_t) std::get<int>(end)};
     } else if (is_type(node->node, prism::ast::IfNode)) {
         auto ifNode = std::get<prism::ast::IfNode>(node->node);
         auto condition = evaluate(ifNode.condition);
