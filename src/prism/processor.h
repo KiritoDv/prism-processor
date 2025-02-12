@@ -110,6 +110,8 @@ namespace prism {
 
     typedef std::variant<RootNode, TextNode, VariableNode, IfNode, ElseIfNode, ElseNode, ForNode, EndNode> NodeType;
 
+    void delete_node(std::shared_ptr<prism::Node>& node);
+
     class Node {
     public:
         Node(NodeType node, std::shared_ptr<Node> parent) : node(std::move(node)), parent(parent) {}

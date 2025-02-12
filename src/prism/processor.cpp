@@ -693,5 +693,46 @@ std::string prism::Processor::process() {
      }
      SPDLOG_INFO("Printed node");
     evaluate_node(std::get<prism::RootNode>(node.node).children);
+    for (const auto& child : *std::get<prism::RootNode>(node.node).children) {
+        delete_node((std::shared_ptr<prism::Node>&) child);
+    }
     return m_output.str();
+}
+
+void prism::delete_node(std::shared_ptr<prism::Node>& node){
+    if (node == nullptr) {
+        return;
+    }
+    if(is_type(node->node, prism::RootNode)){
+        for(const auto& child : *std::get<prism::RootNode>(node->node).children){
+            delete_node((std::shared_ptr<prism::Node>&) child);
+        }
+    }
+    if(is_type(node->node, prism::IfNode)){
+        for(const auto& child : *std::get<prism::IfNode>(node->node).children){
+            delete_node((std::shared_ptr<prism::Node>&) child);
+        }
+        for(const auto& child : std::get<prism::IfNode>(node->node).elseIfs){
+            delete_node((std::shared_ptr<prism::Node>&) child);
+        }
+        if(std::get<prism::IfNode>(node->node).elseBody){
+            delete_node(std::get<prism::IfNode>(node->node).elseBody);
+        }
+    }
+    if(is_type(node->node, prism::ElseNode)){
+        for(const auto& child : *std::get<prism::ElseNode>(node->node).children){
+            delete_node((std::shared_ptr<prism::Node>&) child);
+        }
+    }
+    if(is_type(node->node, prism::ElseIfNode)){
+        for(const auto& child : *std::get<prism::ElseIfNode>(node->node).children){
+            delete_node((std::shared_ptr<prism::Node>&) child);
+        }
+    }
+    if(is_type(node->node, prism::ForNode)){
+        for(const auto& child : *std::get<prism::ForNode>(node->node).children){
+            delete_node((std::shared_ptr<prism::Node>&) child);
+        }
+    }
+    node.reset();
 }
