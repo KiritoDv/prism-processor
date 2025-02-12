@@ -20,6 +20,7 @@ namespace prism::lexer {
         ASSIGN,      // '='
         NOT,         // '!'
         IN,          // in
+        QUOTE,       // '"'
         IF,          // if
         THEN,        // then
         ELSE,        // else

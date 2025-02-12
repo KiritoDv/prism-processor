@@ -111,6 +111,10 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parsePrimary() {
         throw std::runtime_error("Unexpected token");
     }
 
+    if (match(lexer::TokenType::QUOTE)) {
+        return std::make_shared<ASTNode>(QuoteNode{previous().value});
+    }
+
     if (match(lexer::TokenType::NOT)) {
         return std::make_shared<ASTNode>(NotNode{parsePrimary()});
     }
@@ -118,22 +122,29 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parsePrimary() {
     if (match(lexer::TokenType::IDENTIFIER)) {
         std::string varName = previous().value;
         std::shared_ptr<VariableNode> variable = std::make_shared<VariableNode>(VariableNode{varName});
-        
-        if (!match(lexer::TokenType::LBRACKET)) {
-            return std::make_shared<ASTNode>(*variable);
+
+        if (match(lexer::TokenType::LBRACKET)) {
+            auto arrayIndices = std::make_shared<std::vector<std::shared_ptr<ASTNode>>>();
+            // Loop to handle multiple array accesses (e.g., var[0][1][2])
+            do {
+                auto indexNode = parsePrimary();  // Parse the index (e.g., 0, 1)
+                expect(lexer::TokenType::RBRACKET);  // Expect closing bracket
+
+                arrayIndices->push_back(indexNode);
+            } while (match(lexer::TokenType::LBRACKET));
+
+            return std::make_shared<ASTNode>(ArrayAccessNode{variable, arrayIndices});
         }
-
-        std::shared_ptr<std::vector<std::shared_ptr<ASTNode>>> arrayIndices = std::make_shared<std::vector<std::shared_ptr<ASTNode>>>();
-
-        // Loop to handle multiple array accesses (e.g., var[0][1][2])
-        do {
-            auto indexNode = parsePrimary();  // Parse the index (e.g., 0, 1)
-            expect(lexer::TokenType::RBRACKET);  // Expect closing bracket
-
-            arrayIndices->push_back(indexNode);
-        } while (match(lexer::TokenType::LBRACKET));
-
-        return std::make_shared<ASTNode>(ArrayAccessNode{variable, arrayIndices});
+        
+        if (match(lexer::TokenType::LPAREN)) {
+            auto args = std::make_shared<std::vector<std::shared_ptr<ASTNode>>>();
+            do {
+                args->push_back(parse());
+            } while (match(lexer::TokenType::COMMA));
+            expect(lexer::TokenType::RPAREN);
+            return std::make_shared<ASTNode>(FunctionCallNode{variable, args});
+        }
+        return std::make_shared<ASTNode>(*variable);
     }
 
     throw std::runtime_error("Unexpected token");

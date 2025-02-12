@@ -277,6 +277,28 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         }
 
         throw SyntaxError("Invalid IF condition");
+    } else if (is_type(node->node, prism::ast::FunctionCallNode)) {
+        auto func = std::get<prism::ast::FunctionCallNode>(node->node);
+        if (func.name->name == "print") {
+            for(const auto& arg : *func.args){
+                auto value = evaluate(arg);
+                if(is_type(value, bool)){
+                    SPDLOG_INFO("{}", std::get<bool>(value) ? "true" : "false");
+                } else if(is_type(value, int)){
+                    SPDLOG_INFO("{}", std::get<int>(value));
+                } else if(is_type(value, float)){
+                    SPDLOG_INFO("{}", std::get<float>(value));
+                } else if(is_type(value, std::string)){
+                    SPDLOG_INFO("{}", std::get<std::string>(value));
+                } else {
+                    throw SyntaxError("Unsupported print type");
+                }
+            }
+            return Void{};
+        }
+        throw SyntaxError("Unsupported function call");
+    } else if (is_type(node->node, prism::ast::QuoteNode)) {
+        return std::get<prism::ast::QuoteNode>(node->node).value;
     }
     return false;
 }
@@ -515,6 +537,8 @@ void prism::Processor::evaluate_node(std::shared_ptr<std::vector<std::shared_ptr
                 m_output << std::get<int>(value);
             } else if (is_type(value, float)) {
                 m_output << std::get<float>(value);
+            } else if (is_type(value, std::string)) {
+                m_output << std::get<std::string>(value);
             } else if (is_type(value, Void)) {
                 continue;
             } else {
@@ -558,7 +582,7 @@ void prism::Processor::evaluate_node(std::shared_ptr<std::vector<std::shared_ptr
                 array_iterate<int>(forNode, context);
             } else if(is_type(context.iterator, MTDArray<float>)) {
                 array_iterate<float>(forNode, context);
-            }
+            } 
         }
     }
 }

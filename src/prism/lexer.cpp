@@ -9,10 +9,22 @@ bool isKeyWord(const std::string& input, size_t pos) {
 
 std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
     std::vector<prism::lexer::Token> tokens;
+    bool inString = false;
+    std::string currentString;
 
     while (pos < input.size()) {
         char current = input[pos];
-
+        if (inString) {
+            if (current == '"') {
+                tokens.emplace_back(TokenType::QUOTE, currentString);
+                currentString.clear();
+                inString = false;
+            } else {
+                currentString += current;
+            }
+            pos++;
+            continue;
+        }
         if (std::isspace(current)) {
             pos++;  // Skip whitespace
             continue;
@@ -42,6 +54,7 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
             case '[': tokens.emplace_back(TokenType::LBRACKET, "["); pos++; break;
             case ']': tokens.emplace_back(TokenType::RBRACKET, "]"); pos++; break;
             case '!': tokens.emplace_back(TokenType::NOT, "!"); pos++; break;
+            case '"': pos++; inString = true; break;
             case '|':
                 if (peek() == '|') { tokens.emplace_back(TokenType::OR, "||"); pos += 2; }
                 break;

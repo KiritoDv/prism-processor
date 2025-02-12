@@ -14,6 +14,10 @@ namespace prism::ast {
         std::shared_ptr<VariableNode> name;
         std::shared_ptr<std::vector<std::shared_ptr<ASTNode>>> arrayIndices;
     };
+    struct FunctionCallNode {
+        std::shared_ptr<VariableNode> name;
+        std::shared_ptr<std::vector<std::shared_ptr<ASTNode>>> args;
+    };
     struct AssignNode {
         VariableNode name;
         std::shared_ptr<ASTNode> value;
@@ -34,8 +38,9 @@ namespace prism::ast {
     struct RangeNode { std::shared_ptr<ASTNode> left, right; };
     struct InNode { std::shared_ptr<ASTNode> left, right; };
     struct NotNode { std::shared_ptr<ASTNode> node; };
+    struct QuoteNode { std::string value; };
 
-    typedef std::variant<VariableNode, IntegerNode, FloatNode, ArrayAccessNode, AssignNode, OrNode, AndNode, IfNode, ElseIfNode, EqualNode, InNode, RangeNode, NotNode> ASTTypes;
+    typedef std::variant<VariableNode, IntegerNode, FloatNode, ArrayAccessNode, FunctionCallNode, AssignNode, OrNode, AndNode, IfNode, ElseIfNode, EqualNode, InNode, RangeNode, NotNode, QuoteNode> ASTTypes;
 
     struct ASTNode {
         ASTTypes node;
