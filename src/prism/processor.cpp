@@ -296,14 +296,20 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         if (m_items.contains(func.name->name)) {
             auto value = m_items.at(func.name->name);
             if(is_type(value, InvokeFunc)) {
-                std::vector<ContextTypes> args;
+                std::vector<uintptr_t> args;
                 for(const auto& arg : *func.args){
-                    args.push_back(evaluate(arg));
+                    ContextTypes type = evaluate(arg);
+                    args.push_back((uintptr_t) new ContextTypes{type});
                 }
                 auto ptr = std::get<InvokeFunc>(value);
-                auto raw = invoke(ptr, (CContextTypes*) args.data(), args.size());
-                auto cnv = (ContextTypes*) &raw;
-                return *cnv;
+                auto raw = invoke(ptr, args.data(), args.size());
+                for(auto& c : args){
+                    free((void*) c);
+                }
+                args.clear();
+                ContextTypes cnv = *((ContextTypes*) raw);
+                free((void*) raw);
+                return cnv;
             }
         }
         throw SyntaxError("Unsupported function call");

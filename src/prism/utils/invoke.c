@@ -5,7 +5,7 @@
 #pragma clang diagnostic ignored "-Wdeprecated-non-prototype"
 #endif
 
-CContextTypes invoke(CContextTypes (*native_code)(), CContextTypes* args, size_t length) {
+uintptr_t invoke(uintptr_t (*native_code)(), uintptr_t* args, size_t length) {
     switch (length) {
         case 0:
             return native_code();

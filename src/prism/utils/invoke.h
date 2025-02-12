@@ -3,15 +3,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef struct {
-    uint8_t pad[72];
-} CContextTypes;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef CContextTypes (*InvokeFunc)();
-CContextTypes invoke(InvokeFunc native_code, CContextTypes *args, size_t length);
+typedef uintptr_t (*InvokeFunc)();
+uintptr_t invoke(uintptr_t (*native_code)(), uintptr_t* args, size_t length);
 #ifdef __cplusplus
 }
 #endif

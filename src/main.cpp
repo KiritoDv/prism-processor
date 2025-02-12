@@ -23,12 +23,12 @@ enum {
     SHADER_NOISE
 };
 
-prism::ContextTypes add_text(prism::ContextTypes arg1, prism::ContextTypes arg2, prism::ContextTypes arg3) {
+prism::ContextTypes* add_text(prism::ContextTypes* arg1, prism::ContextTypes* arg2, prism::ContextTypes* arg3) {
     std::string items = "";
     for (int i = 0; i<3; i++) {
         items += "add";
     }
-    return prism::ContextTypes{items};
+    return new prism::ContextTypes{items};
 }
 
 #define RAND_NOISE "((random(vec3(floor(gl_FragCoord.xy * noise_scale), float(frame_count))) + 1.0) / 2.0)"
@@ -108,27 +108,27 @@ static const char* shader_item_to_str(uint32_t item, bool with_alpha, bool only_
     return "";
 }
 
-bool get_bool(prism::ContextTypes value) {
-    if (std::holds_alternative<bool>(value)) {
-        return std::get<bool>(value);
-    } else if (std::holds_alternative<int>(value)) {
-        return std::get<int>(value) == 1;
+bool get_bool(prism::ContextTypes* value) {
+    if (std::holds_alternative<bool>(*value)) {
+        return std::get<bool>(*value);
+    } else if (std::holds_alternative<int>(*value)) {
+        return std::get<int>(*value) == 1;
     }
     return false;
 }
 
-prism::ContextTypes append_formula(
-    prism::ContextTypes a_arg,
-    prism::ContextTypes a_single,
-    prism::ContextTypes a_mult,
-    prism::ContextTypes a_mix,
-    prism::ContextTypes a_with_alpha,
-    prism::ContextTypes a_only_alpha,
-    prism::ContextTypes a_alpha,
-    prism::ContextTypes a_first_cycle
+prism::ContextTypes* append_formula(
+    prism::ContextTypes* a_arg,
+    prism::ContextTypes* a_single,
+    prism::ContextTypes* a_mult,
+    prism::ContextTypes* a_mix,
+    prism::ContextTypes* a_with_alpha,
+    prism::ContextTypes* a_only_alpha,
+    prism::ContextTypes* a_alpha,
+    prism::ContextTypes* a_first_cycle
 ) {
     // uint8_t c[2][4] = 
-    auto c = std::get<prism::MTDArray<int>>(a_arg); 
+    auto c = std::get<prism::MTDArray<int>>(*a_arg);
     bool do_single = get_bool(a_single);
     bool do_multiply = get_bool(a_mult);
     bool do_mix = get_bool(a_mix);
@@ -161,7 +161,7 @@ prism::ContextTypes append_formula(
         out += " + ";
         out += shader_item_to_str(c.at(only_alpha, 3), with_alpha, only_alpha, opt_alpha, first_cycle, false);
     }
-    return prism::ContextTypes{out};
+    return new prism::ContextTypes{out};
 }
 
 int main(int argc, char** argv) {
@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
     int o_masks[2] = { 1, 1 };
     int o_blend[2] = { 1, 1 };
     int o_c[2][2][4] = { { { 1, 1, 1, 1 }, { 1, 1, 1, 1 } }, { { 1, 1, 1, 1 }, { 1, 1, 1, 1 } } };
-    int o_color_alpha_same[2] = { 0, 0 };
+    int o_color_alpha_same[3] = { 0, 0, 0 };
     int o_do_single[2][2] = { { 1, 1 }, { 1, 1 } };
     int o_do_multiply[2][2] = { { 1, 1 }, { 1, 1 } };
     int o_do_mix[2][2] = { { 1, 1 }, { 1, 1 } };
@@ -196,15 +196,20 @@ int main(int argc, char** argv) {
         VAR("o_float", M_ARRAY(o_float, float, 6)),
         VAR("o_fog", true) ,
         VAR("o_grayscale", true),
+        VAR("o_noise", true),
         VAR("o_inputs", 4),
         VAR("o_alpha", true),
         VAR("o_masks", M_ARRAY(o_masks, int, 2)),
         VAR("o_blend", M_ARRAY(o_blend, int, 2)),
         VAR("o_three_point_filter", true),
         VAR("o_2cyc", true),
+        VAR("o_alpha_threshold", true),
+        VAR("o_texture_edge", true),
+        VAR("o_invisible", true),
+        VAR("srgb_mode", true),
         VAR("o_c", M_ARRAY(o_c, int, 3, 2, 4)),
         VAR("add_text", (InvokeFunc) add_text),
-        VAR("o_color_alpha_same", M_ARRAY(o_color_alpha_same, int, 2)),
+        VAR("o_color_alpha_same", M_ARRAY(o_color_alpha_same, int, 3)),
         VAR("SHADER_0", SHADER_0),
         VAR("SHADER_INPUT_1", SHADER_INPUT_1),
         VAR("SHADER_INPUT_2", SHADER_INPUT_2),

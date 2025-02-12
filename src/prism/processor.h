@@ -6,6 +6,7 @@
 #include <variant>
 #include <sstream>
 #include <unordered_map>
+#include <cstdlib>
 
 #include "lexer.h"
 #include "ast.h"
