@@ -80,11 +80,10 @@ prism::ContextTypes ReadArrayByType(prism::Processor* proc, prism::ast::ArrayAcc
     prism::MTDArray<T> arrayVar = std::get<prism::MTDArray<T>>(var);
     auto indices = array.arrayIndices;
     auto length = indices->size();
-    auto diff = arrayVar.dimensions.size() - length;
 
 #define g_idx(x) std::get<int>(proc->evaluate(indices->at(x)))
-    if(diff > 0){
-        switch (diff-1) {
+    if(arrayVar.dimensions.size() != length){
+        switch (length) {
             case 1:
                 return arrayVar.get(g_idx(0));
             case 2:
@@ -97,9 +96,8 @@ prism::ContextTypes ReadArrayByType(prism::Processor* proc, prism::ast::ArrayAcc
     }
 
     switch (indices->size()) {
-        case 1: {
+        case 1:
             return arrayVar.at(g_idx(0));
-        }
         case 2:
             return arrayVar.at(g_idx(1), g_idx(0));
         case 3:

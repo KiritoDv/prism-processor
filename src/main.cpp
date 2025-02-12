@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
         VAR("o_blend", M_ARRAY(o_blend, int, 2)),
         VAR("o_three_point_filter", true),
         VAR("o_2cyc", true),
-        VAR("o_c", M_ARRAY(o_c, int, 2, 2, 4)),
+        VAR("o_c", M_ARRAY(o_c, int, 3, 2, 4)),
         VAR("add_text", (InvokeFunc) add_text),
         VAR("o_color_alpha_same", M_ARRAY(o_color_alpha_same, int, 2)),
         VAR("SHADER_0", SHADER_0),
