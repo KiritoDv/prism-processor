@@ -24,7 +24,11 @@ uniform sampler2D uTex1;
     @end
 @end
 
-@for(i in o_textures)
+@for(i in o_float)
     in vec2 xTexClampS@{i};
     in vec2 xTexClampT@{i};
+@end
+
+@if(2.0 == 3.0)
+    in vec2 OhMyGod;
 @end

@@ -25,9 +25,13 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
 
         if (std::isdigit(current)) {
             bool hasDecimal = false;
-            auto result = parseNumber(&hasDecimal);
-
-            tokens.emplace_back(hasDecimal ? TokenType::FLOAT : TokenType::INTEGER, result);
+            if(input.substr(pos + 1, 2) == "..") {
+                auto result = parseNumber(nullptr);
+                tokens.emplace_back(TokenType::INTEGER, result);
+            } else {
+                auto result = parseNumber(&hasDecimal);
+                tokens.emplace_back(hasDecimal ? TokenType::FLOAT : TokenType::INTEGER, result);
+            }
             continue;
         }
 
@@ -109,7 +113,10 @@ std::string prism::lexer::Lexer::parseNumber(bool* hasDecimalPoint) {
         // If it's a digit, we continue parsing
         if (std::isdigit(currentChar)) {
             pos++;
-        } else if (currentChar == '.' && !hasDecimalPoint) {
+        } else if (currentChar == '.' && hasDecimalPoint != nullptr) {
+            if((*hasDecimalPoint)) {
+                break;
+            }
             (*hasDecimalPoint) = true;
             pos++;
         } else {

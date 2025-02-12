@@ -223,7 +223,7 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         }
         return resLeft && resRight;
     } else if (is_type(node->node, prism::ast::EqualNode)) {
-        auto equalNode = std::get<prism::ast::AndNode>(node->node);
+        auto equalNode = std::get<prism::ast::EqualNode>(node->node);
         auto left = evaluate(equalNode.left);
         auto right = evaluate(equalNode.right);
         
