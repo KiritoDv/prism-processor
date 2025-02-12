@@ -412,7 +412,7 @@ prism::Node prism::Processor::parse(std::string input) {
                         while (*c != '\n') {
                             c++;
                         }
-                        children->push_back(std::make_shared<prism::Node>(prism::TextNode{gv::trim(std::string(previous, c))}, current));
+                        children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c+1)}, current));
                         previous = c;
                         current = current->parent;
                         children = get_children(current);
@@ -435,7 +435,7 @@ prism::Node prism::Processor::parse(std::string input) {
                         while (*c != '\n') {
                             c++;
                         }
-                        children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c)}, current));
+                        children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c+1)}, current));
                         previous = c;
                         current = current->parent;
                         children = get_children(current);
@@ -460,7 +460,7 @@ prism::Node prism::Processor::parse(std::string input) {
                         while (*c != '\n') {
                             c++;
                         }
-                        children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c)}, current));
+                        children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c+1)}, current));
                         previous = c;
                         current = current->parent;
                         children = get_children(current);
@@ -476,7 +476,7 @@ prism::Node prism::Processor::parse(std::string input) {
                         while (*c != '\n') {
                             c++;
                         }
-                        children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c)}, current));
+                        children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c+1)}, current));
                         previous = c;
                         current = current->parent;
                         children = get_children(current);
@@ -621,10 +621,10 @@ void print_node(const prism::Node& node, int depth = 0) {
 std::string prism::Processor::process() {
     auto node = parse(m_input);
     SPDLOG_INFO("Parsed node");
-    for (const auto& child : *std::get<prism::RootNode>(node.node).children) {
-        print_node(*child);
-    }
-    SPDLOG_INFO("Printed node");
+    // for (const auto& child : *std::get<prism::RootNode>(node.node).children) {
+    //     print_node(*child);
+    // }
+    // SPDLOG_INFO("Printed node");
     evaluate_node(std::get<prism::RootNode>(node.node).children);
     return m_output.str();
 }
