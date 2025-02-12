@@ -79,7 +79,23 @@ prism::ContextTypes ReadArrayByType(prism::Processor* proc, prism::ast::ArrayAcc
     }
     prism::MTDArray<T> arrayVar = std::get<prism::MTDArray<T>>(var);
     auto indices = array.arrayIndices;
+    auto length = indices->size();
+    auto diff = arrayVar.dimensions.size() - length;
+
 #define g_idx(x) std::get<int>(proc->evaluate(indices->at(x)).value)
+    if(diff > 0){
+        switch (diff) {
+            case 1:
+                return prism::ContextTypes{arrayVar.get(g_idx(0))};
+            case 2:
+                return prism::ContextTypes{arrayVar.get(g_idx(1), g_idx(0))};
+            case 3:
+                return prism::ContextTypes{arrayVar.get(g_idx(2), g_idx(1), g_idx(0))};
+            default:
+                throw prism::SyntaxError("We dont support array indexes bigger than 3");
+        }
+    }
+
     switch (indices->size()) {
         case 1: {
             return prism::ContextTypes{arrayVar.at(g_idx(0))};

@@ -51,8 +51,16 @@ namespace prism {
             return ((T*) ptr)[x * dimensions[1] * dimensions[2] * dimensions[3] + y * dimensions[2] * dimensions[3] + z * dimensions[3] + w];
         }
 
-        T* get(){
-            return (T*) ptr;
+        MTDArray<T> get(int x){
+            return MTDArray<T>{ptr + x * sizeof(T), std::vector<size_t>{dimensions.begin() + 1, dimensions.end()}};
+        }
+
+        MTDArray<T> get(int x, int y){
+            return MTDArray<T>{ptr + x * dimensions[1] * sizeof(T), std::vector<size_t>{dimensions.begin() + 2, dimensions.end()}};
+        }
+
+        MTDArray<T> get(int x, int y, int z){
+            return MTDArray<T>{ptr + x * dimensions[1] * dimensions[2] * sizeof(T), std::vector<size_t>{dimensions.begin() + 3, dimensions.end()}};
         }
     };
 
