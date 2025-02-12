@@ -68,8 +68,8 @@ vec4 hookTexture2D(in sampler2D tex, in vec2 uv, in vec2 texSize) {
 void main() {
     @for(i in 0..2)
         @if(o_textures[i])
-            @{s = o_clamp[i][0]};
-            @{t = o_clamp[i][1]};
+            @{s = o_clamp[i][0]}
+            @{t = o_clamp[i][1]}
 
             vec2 texSize@{i} = @calcTexSize(uTex@{i}, 0);
 

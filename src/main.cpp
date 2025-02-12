@@ -21,6 +21,9 @@ int main(int argc, char** argv) {
     int o_textures[2] = { 1, 1 };
     int o_clamp[2][2] = { { 1, 1, }, { 1, 1 } };
     float o_float[] = { 1.1f, 2.2f, 3.3f, 4.4f, 5.5f, 6.6f };
+    int o_masks[2] = { 1, 1 };
+    int o_blend[2] = { 1, 1 };
+    int o_c[2][2][3] = { { { 1, 1, 1 }, { 1, 1, 1 } }, { { 1, 1, 1 }, { 1, 1, 1 } } };
 
     prism::ContextItems vars = {
         { "o_textures", M_ARRAY(o_textures, int, 2) },
@@ -28,6 +31,14 @@ int main(int argc, char** argv) {
         { "o_float", M_ARRAY(o_float, float, 6) },
         { "o_fog", true },
         { "o_grayscale", true },
+        { "o_inputs", 4 },
+        { "o_alpha", true },
+        { "o_masks", M_ARRAY(o_masks, int, 2) },
+        { "o_blend", M_ARRAY(o_blend, int, 2) },
+        { "o_three_point_filter", true },
+        { "o_2cyc", true },
+        { "o_c", M_ARRAY(o_c, int, 3, 2, 2) },
+        { "SHADER_COMBINED", 1 },
     };
 
     prism::Processor processor;

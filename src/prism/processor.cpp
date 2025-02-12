@@ -261,29 +261,23 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         auto ifNode = std::get<prism::ast::IfNode>(node->node);
         auto condition = evaluate(ifNode.condition);
 
-        if(is_type(condition, bool)) {
-            return std::get<bool>(condition);
-        }
-
-        if(is_type(condition, int)) {
-            return std::get<int>(condition) == 1;
+        if(is_type(condition, bool) || is_type(condition, int)) {
+            if (std::get<bool>(condition) || std::get<int>(condition) == 1) {
+                return evaluate(ifNode.body);
+            } else if(ifNode.elseIfs->size() > 0) {
+                for(const auto& elseIf : *ifNode.elseIfs){
+                    auto condition = evaluate(elseIf->condition);
+                    if(is_type(condition, bool) && std::get<bool>(condition)){
+                        return evaluate(elseIf->body);
+                    }
+                }
+            } else if(ifNode.elseBody) {
+                return evaluate(ifNode.elseBody);
+            }
         }
 
         throw SyntaxError("Invalid IF condition");
-    } else if (is_type(node->node, prism::ast::ElseIfNode)) {
-        auto ifNode = std::get<prism::ast::ElseIfNode>(node->node);
-        auto condition = evaluate(ifNode.condition);
-
-        if(is_type(condition, bool)) {
-            return std::get<bool>(condition);
-        }
-
-        if(is_type(condition, int)) {
-            return std::get<int>(condition) == 1;
-        }
-
-        throw SyntaxError("Invalid Else If condition");
-    } 
+    }
     return false;
 }
 
@@ -497,6 +491,8 @@ prism::Node prism::Processor::parse(std::string input) {
         c++;
     }
 
+    children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c)}, current));
+
     if (current != root) {
         throw prism::SyntaxError("Unterminated block");
     }
@@ -507,7 +503,7 @@ void prism::Processor::evaluate_node(std::shared_ptr<std::vector<std::shared_ptr
     for (const auto& child : *children) {
         if (is_type(child->node, prism::TextNode)) {
             auto result = std::get<prism::TextNode>(child->node).text; // gv::trim(std::get<prism::TextNode>(child->node).text);
-            if(!result.empty()){
+            if(!gv::trim(result).empty()){
                 m_output << result;
             }
         } else if (is_type(child->node, prism::VariableNode)) {
