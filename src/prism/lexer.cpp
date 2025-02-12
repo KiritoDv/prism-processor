@@ -97,6 +97,22 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
                     pos++;
                 }
                 break;
+            case '+':
+                tokens.emplace_back(TokenType::ADD, "+");
+                pos++;
+                break;
+            case '-':
+                tokens.emplace_back(TokenType::SUB, "-");
+                pos++;
+                break;
+            case '*':
+                tokens.emplace_back(TokenType::MUL, "*");
+                pos++;
+                break;
+            case '/':
+                tokens.emplace_back(TokenType::DIV, "/");
+                pos++;
+                break;
             case 'i':
                 if (peek() == 'n') {
                     tokens.emplace_back(TokenType::IN, "in");

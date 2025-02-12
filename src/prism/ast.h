@@ -47,6 +47,18 @@ struct IfNode {
 struct EqualNode {
     std::shared_ptr<ASTNode> left, right;
 };
+struct AddNode {
+    std::shared_ptr<ASTNode> left, right;
+};
+struct SubNode {
+    std::shared_ptr<ASTNode> left, right;
+};
+struct MulNode {
+    std::shared_ptr<ASTNode> left, right;
+};
+struct DivNode {
+    std::shared_ptr<ASTNode> left, right;
+};
 struct RangeNode {
     std::shared_ptr<ASTNode> left, right;
 };
@@ -61,7 +73,7 @@ struct QuoteNode {
 };
 
 typedef std::variant<VariableNode, IntegerNode, FloatNode, ArrayAccessNode, FunctionCallNode, AssignNode, OrNode,
-                     AndNode, IfNode, ElseIfNode, EqualNode, InNode, RangeNode, NotNode, QuoteNode>
+                     AndNode, IfNode, ElseIfNode, EqualNode, AddNode, SubNode, DivNode, MulNode, InNode, RangeNode, NotNode, QuoteNode>
     ASTTypes;
 
 struct ASTNode {
@@ -88,6 +100,10 @@ class Parser {
     std::shared_ptr<ASTNode> parseOr();
     std::shared_ptr<ASTNode> parseAnd();
     std::shared_ptr<ASTNode> parseEqual();
+    std::shared_ptr<ASTNode> parseAdd();
+    std::shared_ptr<ASTNode> parseSub();
+    std::shared_ptr<ASTNode> parseMul();
+    std::shared_ptr<ASTNode> parseDiv();
     std::shared_ptr<ASTNode> parseRange();
     std::shared_ptr<ASTNode> parseIn();
     std::shared_ptr<ASTNode> parsePrimary();

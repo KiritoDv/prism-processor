@@ -19,6 +19,10 @@ enum class TokenType {
     EQUAL,       // '=='
     ASSIGN,      // '='
     NOT,         // '!'
+    ADD,         // '+'
+    SUB,         // '-'
+    MUL,         // '*'
+    DIV,         // '/'
     IN,          // in
     QUOTE,       // '"'
     IF,          // if

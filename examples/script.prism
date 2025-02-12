@@ -80,8 +80,11 @@ void main() {
             @{s = o_clamp[i][0]}
             @{t = o_clamp[i][1]}
 
-            @if(opengles) vec2 texSize@{i} = vec2(textureSize(uTex@{i}, 0));
-            @else vec2 texSize@{i} = textureSize(uTex@{i}, 0);
+            @if(opengles) 
+                vec2 texSize@{i} = vec2(textureSize(uTex@{i}, 0));
+            @else 
+                vec2 texSize@{i} = textureSize(uTex@{i}, 0);
+            @end
 
             @if(!s && !t)
                 vec2 vTexCoordAdj@{i} = vTexCoord@{i};
@@ -98,8 +101,11 @@ void main() {
             vec4 texVal@{i} = hookTexture2D(uTex@{i}, vTexCoordAdj@{i}, texSize@{i});
 
             @if(o_masks[i])
-                @if(opengles) vec2 maskSize@{i} = vec2(textureSize(uTexMask@{i}, 0));
-                @else vec2 maskSize@{i} = textureSize(uTexMask@{i}, 0);
+                @if(opengles) 
+                    vec2 maskSize@{i} = vec2(textureSize(uTexMask@{i}, 0));
+                @else 
+                    vec2 maskSize@{i} = textureSize(uTexMask@{i}, 0);
+                @end
 
                 vec4 maskVal@{i} = hookTexture2D(uTexMask@{i}, vTexCoordAdj@{i}, maskSize@{i});
 
@@ -114,8 +120,11 @@ void main() {
         @end
     @end
 
-    @if(o_alpha) vec4 texel;
-    @else vec3 texel;
+    @if(o_alpha) 
+        vec4 texel;
+    @else 
+        vec3 texel;
+    @end
 
     @for(c in 0..(if o_2cyc then 2 else 1))
         @if(c == 1)

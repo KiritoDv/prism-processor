@@ -185,6 +185,8 @@ int main(int argc, char** argv) {
     int o_do_mix[2][2] = { { 1, 1 }, { 1, 1 } };
 
     prism::ContextItems vars = {
+        VAR("GLSL_VERSION", "#version 410 core"),
+        VAR("input", "in"),
         VAR("o_textures", M_ARRAY(o_textures, int, 2)),
         VAR("o_clamp", M_ARRAY(o_clamp, int, 2, 2)),
         VAR("o_float", M_ARRAY(o_float, float, 6)),
@@ -201,9 +203,13 @@ int main(int argc, char** argv) {
         VAR("o_texture_edge", true),
         VAR("o_invisible", true),
         VAR("srgb_mode", true),
+        VAR("core_opengl", false),
+        VAR("opengles", false),
+        VAR("o_current_filter", 0),
         VAR("o_c", M_ARRAY(o_c, int, 3, 2, 4)),
         VAR("add_text", (InvokeFunc) add_text),
         VAR("o_color_alpha_same", M_ARRAY(o_color_alpha_same, int, 3)),
+        VAR("FILTER_THREE_POINT", 3),
         VAR("SHADER_0", SHADER_0),
         VAR("SHADER_INPUT_1", SHADER_INPUT_1),
         VAR("SHADER_INPUT_2", SHADER_INPUT_2),

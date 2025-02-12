@@ -262,6 +262,94 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         }
 
         throw SyntaxError("Invalid EQUAL operation");
+    } else if (is_type(node->node, prism::ast::AddNode)) {
+        auto addNode = std::get<prism::ast::AddNode>(node->node);
+        auto left = evaluate(addNode.left);
+        auto right = evaluate(addNode.right);
+
+        if (is_type(left, int) && is_type(right, int)) {
+            return std::get<int>(left) + std::get<int>(right);
+        }
+
+        if (is_type(left, float) && is_type(right, float)) {
+            return std::get<float>(left) + std::get<float>(right);
+        }
+
+        if (is_type(left, float) && is_type(right, int)) {
+            return std::get<float>(left) + std::get<int>(right);
+        }
+
+        if (is_type(left, int) && is_type(right, float)) {
+            return std::get<int>(left) + std::get<float>(right);
+        }
+
+        throw SyntaxError("Invalid ADD operation");
+    } else if (is_type(node->node, prism::ast::SubNode)) {
+        auto subNode = std::get<prism::ast::SubNode>(node->node);
+        auto left = evaluate(subNode.left);
+        auto right = evaluate(subNode.right);
+
+        if (is_type(left, int) && is_type(right, int)) {
+            return std::get<int>(left) - std::get<int>(right);
+        }
+
+        if (is_type(left, float) && is_type(right, float)) {
+            return std::get<float>(left) - std::get<float>(right);
+        }
+
+        if (is_type(left, float) && is_type(right, int)) {
+            return std::get<float>(left) - std::get<int>(right);
+        }
+
+        if (is_type(left, int) && is_type(right, float)) {
+            return std::get<int>(left) - std::get<float>(right);
+        }
+
+        throw SyntaxError("Invalid SUB operation");
+    } else if (is_type(node->node, prism::ast::MulNode)) {
+        auto mulNode = std::get<prism::ast::MulNode>(node->node);
+        auto left = evaluate(mulNode.left);
+        auto right = evaluate(mulNode.right);
+
+        if (is_type(left, int) && is_type(right, int)) {
+            return std::get<int>(left) * std::get<int>(right);
+        }
+
+        if (is_type(left, float) && is_type(right, float)) {
+            return std::get<float>(left) * std::get<float>(right);
+        }
+
+        if (is_type(left, float) && is_type(right, int)) {
+            return std::get<float>(left) * std::get<int>(right);
+        }
+
+        if (is_type(left, int) && is_type(right, float)) {
+            return std::get<int>(left) * std::get<float>(right);
+        }
+
+        throw SyntaxError("Invalid MUL operation");
+    } else if (is_type(node->node, prism::ast::DivNode)) {
+        auto mulNode = std::get<prism::ast::DivNode>(node->node);
+        auto left = evaluate(mulNode.left);
+        auto right = evaluate(mulNode.right);
+
+        if (is_type(left, int) && is_type(right, int)) {
+            return std::get<int>(left) / std::get<int>(right);
+        }
+
+        if (is_type(left, float) && is_type(right, float)) {
+            return std::get<float>(left) / std::get<float>(right);
+        }
+
+        if (is_type(left, float) && is_type(right, int)) {
+            return std::get<float>(left) / std::get<int>(right);
+        }
+
+        if (is_type(left, int) && is_type(right, float)) {
+            return std::get<int>(left) / std::get<float>(right);
+        }
+
+        throw SyntaxError("Invalid MUL operation");
     } else if (is_type(node->node, prism::ast::RangeNode)) {
         auto rangeNode = std::get<prism::ast::RangeNode>(node->node);
         auto start = evaluate(rangeNode.left);
@@ -443,7 +531,7 @@ prism::Node prism::Processor::parse(std::string input) {
                 previous = c;
                 if (m_items.contains(expr)) {
                     children->push_back(std::make_shared<prism::Node>(
-                        prism::TextNode{ std::get<std::string>(m_items[expr]) }, current));
+                        prism::ReplaceNode{ std::get<std::string>(m_items[expr]) }, current));
                 } else if (expr == "if") {
                     auto ast = parse_parenthesis(c, input.end());
                     previous = c;
@@ -585,6 +673,8 @@ void prism::Processor::evaluate_node(std::shared_ptr<std::vector<std::shared_ptr
             if (!gv::trim(result).empty()) {
                 m_output << result;
             }
+        } else if (is_type(child->node, prism::ReplaceNode)) {
+            m_output << std::get<prism::ReplaceNode>(child->node).text;
         } else if (is_type(child->node, prism::VariableNode)) {
             auto var = std::get<prism::VariableNode>(child->node);
             auto value = evaluate(var.name);
@@ -650,6 +740,8 @@ void print_node(const prism::Node& node, int depth = 0) {
     }
     if (is_type(node.node, prism::TextNode)) {
         std::cout << std::get<prism::TextNode>(node.node).text << std::endl;
+    } else if (is_type(node.node, prism::ReplaceNode)) {
+        std::cout << std::get<prism::ReplaceNode>(node.node).text << std::endl;
     } else if (is_type(node.node, prism::IfNode)) {
         std::cout << "If" << std::endl;
         auto ifNode = std::get<prism::IfNode>(node.node);
