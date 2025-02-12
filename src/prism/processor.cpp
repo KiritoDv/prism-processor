@@ -304,11 +304,11 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
                 auto ptr = std::get<InvokeFunc>(value);
                 auto raw = invoke(ptr, args.data(), args.size());
                 for(auto& c : args){
-                    free((void*) c);
+                    delete (ContextTypes*) c;
                 }
                 args.clear();
                 ContextTypes cnv = *((ContextTypes*) raw);
-                free((void*) raw);
+                delete (ContextTypes*) raw;
                 return cnv;
             }
         }
