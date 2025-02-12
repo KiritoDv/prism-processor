@@ -5,52 +5,56 @@
 #include <vector>
 
 namespace prism::lexer {
-    enum class TokenType {
-        IDENTIFIER,  // Variable names
-        INTEGER,     // Number
-        FLOAT,       // Float
-        LPAREN,      // '('
-        RPAREN,      // ')'
-        LBRACKET,    // '['
-        RBRACKET,    // ']'
-        COMMA,       // ','
-        OR,          // '||'
-        AND,         // '&&'
-        EQUAL,       // '=='
-        ASSIGN,      // '='
-        NOT,         // '!'
-        IN,          // in
-        QUOTE,       // '"'
-        IF,          // if
-        THEN,        // then
-        ELSE,        // else
-        ELSEIF,      // elseif
-        RANGE,       // ..
-        TRUE,        // true
-        FALSE,       // false
-        END_OF_INPUT // End of script
-    };
+enum class TokenType {
+    IDENTIFIER,  // Variable names
+    INTEGER,     // Number
+    FLOAT,       // Float
+    LPAREN,      // '('
+    RPAREN,      // ')'
+    LBRACKET,    // '['
+    RBRACKET,    // ']'
+    COMMA,       // ','
+    OR,          // '||'
+    AND,         // '&&'
+    EQUAL,       // '=='
+    ASSIGN,      // '='
+    NOT,         // '!'
+    IN,          // in
+    QUOTE,       // '"'
+    IF,          // if
+    THEN,        // then
+    ELSE,        // else
+    ELSEIF,      // elseif
+    RANGE,       // ..
+    TRUE,        // true
+    FALSE,       // false
+    END_OF_INPUT // End of script
+};
 
-    struct Token {
-        TokenType type;
-        std::string value;
+struct Token {
+    TokenType type;
+    std::string value;
 
-        Token(TokenType type, std::string value = "") : type(type), value(std::move(value)) {}
-    };
+    Token(TokenType type, std::string value = "") : type(type), value(std::move(value)) {
+    }
+};
 
-    class Lexer {
-    private:
-        std::string input;
-        size_t pos = 0;
-    public:
-        explicit Lexer(std::string text) : input(text) {}
-        std::vector<Token> tokenize();
-        size_t length() {
-            return pos;
-        }
-    private:
-        [[nodiscard]] char peek() const;
-        std::string parseIdentifier();
-        std::string parseNumber(bool* hasDecimalPoint);
-    };
-}
+class Lexer {
+  private:
+    std::string input;
+    size_t pos = 0;
+
+  public:
+    explicit Lexer(std::string text) : input(text) {
+    }
+    std::vector<Token> tokenize();
+    size_t length() {
+        return pos;
+    }
+
+  private:
+    [[nodiscard]] char peek() const;
+    std::string parseIdentifier();
+    std::string parseNumber(bool* hasDecimalPoint);
+};
+} // namespace prism::lexer

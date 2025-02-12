@@ -12,7 +12,7 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseAssign() {
     while (match(lexer::TokenType::ASSIGN)) {
         auto var = std::get<VariableNode>(node->node);
         auto right = parseOr();
-        auto parent = std::make_shared<prism::ast::ASTNode>(AssignNode{var, right});
+        auto parent = std::make_shared<prism::ast::ASTNode>(AssignNode{ var, right });
         node = parent;
     }
     return node;
@@ -22,7 +22,7 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseOr() {
     auto node = parseAnd();
     while (match(lexer::TokenType::OR)) {
         auto right = parseAnd();
-        auto parent = std::make_shared<prism::ast::ASTNode>(OrNode{node, right});
+        auto parent = std::make_shared<prism::ast::ASTNode>(OrNode{ node, right });
         node = parent;
     }
     return node;
@@ -32,7 +32,7 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseAnd() {
     auto node = parseEqual();
     while (match(lexer::TokenType::AND)) {
         auto right = parseEqual();
-        auto parent = std::make_shared<prism::ast::ASTNode>(AndNode{node, right});
+        auto parent = std::make_shared<prism::ast::ASTNode>(AndNode{ node, right });
         node = parent;
     }
     return node;
@@ -42,7 +42,7 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseEqual() {
     auto node = parseIn();
     while (match(lexer::TokenType::EQUAL)) {
         auto right = parseIn();
-        auto parent = std::make_shared<prism::ast::ASTNode>(EqualNode{node, right});
+        auto parent = std::make_shared<prism::ast::ASTNode>(EqualNode{ node, right });
         node = parent;
     }
     return node;
@@ -52,7 +52,7 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseIn() {
     auto node = parseRange();
     while (match(lexer::TokenType::IN)) {
         auto right = parseRange();
-        auto parent = std::make_shared<prism::ast::ASTNode>(InNode{node, right});
+        auto parent = std::make_shared<prism::ast::ASTNode>(InNode{ node, right });
         node = parent;
     }
     return node;
@@ -62,7 +62,7 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseRange() {
     auto node = parsePrimary();
     while (match(lexer::TokenType::RANGE)) {
         auto right = parsePrimary();
-        auto parent = std::make_shared<prism::ast::ASTNode>(RangeNode{node, right});
+        auto parent = std::make_shared<prism::ast::ASTNode>(RangeNode{ node, right });
         node = parent;
     }
     return node;
@@ -71,78 +71,79 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseRange() {
 std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parsePrimary() {
     if (match(lexer::TokenType::LPAREN)) {
         auto node = parse();
-        expect(lexer::TokenType::RPAREN);  // Ensure closing ')'
+        expect(lexer::TokenType::RPAREN); // Ensure closing ')'
         return node;
     }
 
     if (match(lexer::TokenType::INTEGER)) {
-        return std::make_shared<ASTNode>(IntegerNode{std::stoi(previous().value)});
+        return std::make_shared<ASTNode>(IntegerNode{ std::stoi(previous().value) });
     }
 
     if (match(lexer::TokenType::FLOAT)) {
-        return std::make_shared<ASTNode>(FloatNode{std::stof(previous().value)});
+        return std::make_shared<ASTNode>(FloatNode{ std::stof(previous().value) });
     }
 
     if (match(lexer::TokenType::TRUE)) {
-        return std::make_shared<ASTNode>(IntegerNode{1});
+        return std::make_shared<ASTNode>(IntegerNode{ 1 });
     }
 
     if (match(lexer::TokenType::FALSE)) {
-        return std::make_shared<ASTNode>(IntegerNode{0});
+        return std::make_shared<ASTNode>(IntegerNode{ 0 });
     }
 
     if (match(lexer::TokenType::IF)) {
         auto condition = parse();
-        expect(lexer::TokenType::THEN);  // Ensure 'then' keyword
+        expect(lexer::TokenType::THEN); // Ensure 'then' keyword
         auto body = parse();
-        std::shared_ptr<std::vector<std::shared_ptr<ElseIfNode>>> elseIfs = std::make_shared<std::vector<std::shared_ptr<ElseIfNode>>>();
+        std::shared_ptr<std::vector<std::shared_ptr<ElseIfNode>>> elseIfs =
+            std::make_shared<std::vector<std::shared_ptr<ElseIfNode>>>();
         while (match(lexer::TokenType::ELSEIF)) {
             auto elseIfCondition = parse();
-            expect(lexer::TokenType::THEN);  // Ensure 'then' keyword
+            expect(lexer::TokenType::THEN); // Ensure 'then' keyword
             auto elseIfBody = parse();
-            elseIfs->push_back(std::make_shared<ElseIfNode>(ElseIfNode{elseIfCondition, elseIfBody}));
+            elseIfs->push_back(std::make_shared<ElseIfNode>(ElseIfNode{ elseIfCondition, elseIfBody }));
         }
 
         if (match(lexer::TokenType::ELSE)) {
             auto elseBody = parse();
-            return std::make_shared<ASTNode>(IfNode{condition, body, elseIfs, elseBody});
+            return std::make_shared<ASTNode>(IfNode{ condition, body, elseIfs, elseBody });
         }
-        
+
         throw std::runtime_error("Unexpected token");
     }
 
     if (match(lexer::TokenType::QUOTE)) {
-        return std::make_shared<ASTNode>(QuoteNode{previous().value});
+        return std::make_shared<ASTNode>(QuoteNode{ previous().value });
     }
 
     if (match(lexer::TokenType::NOT)) {
-        return std::make_shared<ASTNode>(NotNode{parsePrimary()});
+        return std::make_shared<ASTNode>(NotNode{ parsePrimary() });
     }
 
     if (match(lexer::TokenType::IDENTIFIER)) {
         std::string varName = previous().value;
-        std::shared_ptr<VariableNode> variable = std::make_shared<VariableNode>(VariableNode{varName});
+        std::shared_ptr<VariableNode> variable = std::make_shared<VariableNode>(VariableNode{ varName });
 
         if (match(lexer::TokenType::LBRACKET)) {
             auto arrayIndices = std::make_shared<std::vector<std::shared_ptr<ASTNode>>>();
             // Loop to handle multiple array accesses (e.g., var[0][1][2])
             do {
-                auto indexNode = parsePrimary();  // Parse the index (e.g., 0, 1)
-                expect(lexer::TokenType::RBRACKET);  // Expect closing bracket
+                auto indexNode = parsePrimary();    // Parse the index (e.g., 0, 1)
+                expect(lexer::TokenType::RBRACKET); // Expect closing bracket
 
                 arrayIndices->push_back(indexNode);
             } while (match(lexer::TokenType::LBRACKET));
 
-            return std::make_shared<ASTNode>(ArrayAccessNode{variable, arrayIndices});
+            return std::make_shared<ASTNode>(ArrayAccessNode{ variable, arrayIndices });
         }
-        
+
         if (match(lexer::TokenType::LPAREN)) {
             auto args = std::make_shared<std::vector<std::shared_ptr<ASTNode>>>();
             do {
                 args->push_back(parse());
             } while (match(lexer::TokenType::COMMA));
             expect(lexer::TokenType::RPAREN);
-            return std::make_shared<ASTNode>(FunctionCallNode{variable, args});
+            return std::make_shared<ASTNode>(FunctionCallNode{ variable, args });
         }
         return std::make_shared<ASTNode>(*variable);
     }
@@ -167,7 +168,9 @@ prism::lexer::Token prism::ast::Parser::expect(lexer::TokenType type) {
     throw prism::SyntaxError("Unexpected token");
 }
 
-prism::lexer::Token prism::ast::Parser::previous() { return tokens[pos - 1]; }
+prism::lexer::Token prism::ast::Parser::previous() {
+    return tokens[pos - 1];
+}
 
 void prism::ast::print_ast_node(std::shared_ptr<prism::ast::ASTNode> node, int depth) {
     std::string indent = std::string(depth, ' ');

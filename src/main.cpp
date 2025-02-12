@@ -25,10 +25,10 @@ enum {
 
 prism::ContextTypes* add_text(prism::ContextTypes* arg1, prism::ContextTypes* arg2, prism::ContextTypes* arg3) {
     std::string items = "";
-    for (int i = 0; i<3; i++) {
+    for (int i = 0; i < 3; i++) {
         items += "add";
     }
-    return new prism::ContextTypes{items};
+    return new prism::ContextTypes{ items };
 }
 
 #define RAND_NOISE "((random(vec3(floor(gl_FragCoord.xy * noise_scale), float(frame_count))) + 1.0) / 2.0)"
@@ -117,17 +117,11 @@ bool get_bool(prism::ContextTypes* value) {
     return false;
 }
 
-prism::ContextTypes* append_formula(
-    prism::ContextTypes* a_arg,
-    prism::ContextTypes* a_single,
-    prism::ContextTypes* a_mult,
-    prism::ContextTypes* a_mix,
-    prism::ContextTypes* a_with_alpha,
-    prism::ContextTypes* a_only_alpha,
-    prism::ContextTypes* a_alpha,
-    prism::ContextTypes* a_first_cycle
-) {
-    // uint8_t c[2][4] = 
+prism::ContextTypes* append_formula(prism::ContextTypes* a_arg, prism::ContextTypes* a_single,
+                                    prism::ContextTypes* a_mult, prism::ContextTypes* a_mix,
+                                    prism::ContextTypes* a_with_alpha, prism::ContextTypes* a_only_alpha,
+                                    prism::ContextTypes* a_alpha, prism::ContextTypes* a_first_cycle) {
+    // uint8_t c[2][4] =
     auto c = std::get<prism::MTDArray<int>>(*a_arg);
     bool do_single = get_bool(a_single);
     bool do_multiply = get_bool(a_mult);
@@ -161,7 +155,7 @@ prism::ContextTypes* append_formula(
         out += " + ";
         out += shader_item_to_str(c.at(only_alpha, 3), with_alpha, only_alpha, opt_alpha, first_cycle, false);
     }
-    return new prism::ContextTypes{out};
+    return new prism::ContextTypes{ out };
 }
 
 int main(int argc, char** argv) {
@@ -180,7 +174,7 @@ int main(int argc, char** argv) {
     input.close();
 
     int o_textures[2] = { 1, 1 };
-    int o_clamp[2][2] = { { 1, 1, }, { 1, 1 } };
+    int o_clamp[2][2] = { { 1, 1 }, { 1, 1 } };
     float o_float[] = { 1.1f, 2.2f, 3.3f, 4.4f, 5.5f, 6.6f };
     int o_masks[2] = { 1, 1 };
     int o_blend[2] = { 1, 1 };
@@ -191,10 +185,10 @@ int main(int argc, char** argv) {
     int o_do_mix[2][2] = { { 1, 1 }, { 1, 1 } };
 
     prism::ContextItems vars = {
-        VAR( "o_textures", M_ARRAY(o_textures, int, 2) ),
+        VAR("o_textures", M_ARRAY(o_textures, int, 2)),
         VAR("o_clamp", M_ARRAY(o_clamp, int, 2, 2)),
         VAR("o_float", M_ARRAY(o_float, float, 6)),
-        VAR("o_fog", true) ,
+        VAR("o_fog", true),
         VAR("o_grayscale", true),
         VAR("o_noise", true),
         VAR("o_inputs", 4),

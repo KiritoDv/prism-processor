@@ -6,27 +6,27 @@
 #include "utils/gv.h"
 
 void prism::Processor::populate(const ContextItems& items) {
-    if(items.contains("@if")){
+    if (items.contains("@if")) {
         throw SyntaxError("Reserved keyword if");
     }
-    
-    if(items.contains("@else")){
+
+    if (items.contains("@else")) {
         throw SyntaxError("Reserved keyword else");
     }
-    
-    if(items.contains("@elseif")){
+
+    if (items.contains("@elseif")) {
         throw SyntaxError("Reserved keyword elseif");
     }
-    
-    if(items.contains("@for")){
+
+    if (items.contains("@for")) {
         throw SyntaxError("Reserved keyword for");
     }
-    
-    if(items.contains("@end")){
+
+    if (items.contains("@end")) {
         throw SyntaxError("Reserved keyword end");
     }
-    
-    if(items.contains("@prism")){
+
+    if (items.contains("@prism")) {
         throw SyntaxError("Reserved keyword prism");
     }
 
@@ -40,18 +40,18 @@ void prism::Processor::load(const std::string& data) {
         m_lines.push_back(line);
     }
 
-    if(m_lines.empty()) {
+    if (m_lines.empty()) {
         throw RuntimeError("No data to process");
     }
 
-    if(m_lines[0].rfind("@prism", 0) != 0) {
+    if (m_lines[0].rfind("@prism", 0) != 0) {
         throw SyntaxError("Invalid prism file");
     }
 
     auto header = gv::parenthesis(m_lines[0].substr(6));
     auto args = gv::il_args(header[0]);
 
-    if(!args.contains("type")){
+    if (!args.contains("type")) {
         throw SyntaxError("Type not specified");
     }
 
@@ -61,20 +61,19 @@ void prism::Processor::load(const std::string& data) {
     auto description = args["description"].value_or("Unknown");
     auto author = args["author"].value_or("Someone very clever");
     m_lines.erase(m_lines.begin());
-    if(m_lines[0].empty()) {
+    if (m_lines[0].empty()) {
         m_lines.erase(m_lines.begin());
     }
     m_input = "";
-    for(const auto& n_line : m_lines){
+    for (const auto& n_line : m_lines) {
         m_input += n_line + "\n";
     }
     SPDLOG_INFO("Prism script: {} v{} by {}", name, version, author);
 }
 
-template <typename T>
-prism::ContextTypes read_array(prism::Processor* proc, prism::ast::ArrayAccessNode& array) {
+template <typename T> prism::ContextTypes read_array(prism::Processor* proc, prism::ast::ArrayAccessNode& array) {
     auto var = proc->getTypes().at(array.name->name);
-    if(!is_type(var, prism::MTDArray<T>)) {
+    if (!is_type(var, prism::MTDArray<T>)) {
         throw prism::SyntaxError(array.name->name + " is not an array");
     }
     prism::MTDArray<T> arrayVar = std::get<prism::MTDArray<T>>(var);
@@ -82,7 +81,7 @@ prism::ContextTypes read_array(prism::Processor* proc, prism::ast::ArrayAccessNo
     auto length = indices->size();
 
 #define g_idx(x) std::get<int>(proc->evaluate(indices->at(x)))
-    if(arrayVar.dimensions.size() != length){
+    if (arrayVar.dimensions.size() != length) {
         switch (length) {
             case 1:
                 return arrayVar.get(g_idx(0));
@@ -110,29 +109,30 @@ prism::ContextTypes read_array(prism::Processor* proc, prism::ast::ArrayAccessNo
 }
 
 prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast::ASTNode>& node) {
-    if (!node) return false;
+    if (!node)
+        return false;
     if (is_type(node->node, prism::ast::VariableNode)) {
         auto var = std::get<prism::ast::VariableNode>(node->node);
-        if(!this->m_items.contains(var.name)){
+        if (!this->m_items.contains(var.name)) {
             throw SyntaxError("Unknown variable " + var.name);
         }
         auto value = this->m_items.at(var.name);
-        if(is_type(value, bool)){
+        if (is_type(value, bool)) {
             return std::get<bool>(value);
         }
-        if(is_type(value, int)){
+        if (is_type(value, int)) {
             return std::get<int>(value);
         }
-        if(is_type(value, float)){
+        if (is_type(value, float)) {
             return std::get<float>(value);
         }
-        if(is_type(value, MTDArray<bool>)){
+        if (is_type(value, MTDArray<bool>)) {
             return std::get<MTDArray<bool>>(value);
         }
-        if(is_type(value, MTDArray<int>)){
+        if (is_type(value, MTDArray<int>)) {
             return std::get<MTDArray<int>>(value);
         }
-        if(is_type(value, MTDArray<float>)){
+        if (is_type(value, MTDArray<float>)) {
             return std::get<MTDArray<float>>(value);
         }
         throw SyntaxError("Unsupported type");
@@ -142,58 +142,58 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         return std::get<prism::ast::FloatNode>(node->node).value;
     } else if (is_type(node->node, prism::ast::ArrayAccessNode)) {
         auto array = std::get<prism::ast::ArrayAccessNode>(node->node);
-        if(!this->m_items.contains(array.name->name)){
+        if (!this->m_items.contains(array.name->name)) {
             throw SyntaxError("Unknown variable " + array.name->name);
         }
         auto var = this->m_items.at(array.name->name);
-        if(is_type(var, MTDArray<bool>)){
+        if (is_type(var, MTDArray<bool>)) {
             return read_array<bool>(this, array);
         }
-        if(is_type(var, MTDArray<int>)){
+        if (is_type(var, MTDArray<int>)) {
             return read_array<int>(this, array);
         }
-        if(is_type(var, MTDArray<float>)){
+        if (is_type(var, MTDArray<float>)) {
             return read_array<float>(this, array);
         }
-        
+
         throw SyntaxError("Invalid array access");
     } else if (is_type(node->node, prism::ast::InNode)) {
         auto inNode = std::get<prism::ast::InNode>(node->node);
         auto var = std::get<prism::ast::VariableNode>(inNode.left->node);
         auto result = evaluate(inNode.right);
-        if(is_type(result, int) || is_type(result, float) || is_type(result, bool)) {
+        if (is_type(result, int) || is_type(result, float) || is_type(result, bool)) {
             throw SyntaxError("Invalid IN operation");
         }
-        if(is_type(result, MTDArray<int>)) {
+        if (is_type(result, MTDArray<int>)) {
             return ForContext{ var.name, std::get<MTDArray<int>>(result) };
         }
-        if(is_type(result, MTDArray<float>)) {
+        if (is_type(result, MTDArray<float>)) {
             return ForContext{ var.name, std::get<MTDArray<float>>(result) };
         }
-        if(is_type(result, MTDArray<bool>)) {
+        if (is_type(result, MTDArray<bool>)) {
             return ForContext{ var.name, std::get<MTDArray<bool>>(result) };
         }
-        if(is_type(result, GeneratedRange)) {
+        if (is_type(result, GeneratedRange)) {
             return ForContext{ var.name, std::get<GeneratedRange>(result) };
         }
         throw SyntaxError("Invalid IN operation");
     } else if (is_type(node->node, prism::ast::NotNode)) {
         auto notNode = std::get<prism::ast::NotNode>(node->node);
         auto value = evaluate(notNode.node);
-        if(is_type(value, bool)){
+        if (is_type(value, bool)) {
             return !std::get<bool>(value);
         }
-        if(is_type(value, int)){
+        if (is_type(value, int)) {
             return std::get<int>(value) == 0;
         }
         throw SyntaxError("Invalid NOT operation");
     } else if (is_type(node->node, prism::ast::AssignNode)) {
         auto assignNode = std::get<prism::ast::AssignNode>(node->node);
         auto value = evaluate(assignNode.value);
-        if(is_type(value, GeneratedRange) || is_type(value, std::string) || is_type(value, ForContext)){
+        if (is_type(value, GeneratedRange) || is_type(value, std::string) || is_type(value, ForContext)) {
             throw SyntaxError("Invalid assign operation");
         }
-        this->m_items[assignNode.name.name] = prism::ContextTypes{value};
+        this->m_items[assignNode.name.name] = prism::ContextTypes{ value };
         return Void{};
     } else if (is_type(node->node, prism::ast::OrNode)) {
         auto orNode = std::get<prism::ast::OrNode>(node->node);
@@ -201,17 +201,17 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         auto right = evaluate(orNode.right);
         bool resLeft = false;
         bool resRight = false;
-        if(is_type(left, bool)) {
-            resLeft = {std::get<bool>(left)};
-        } else if(is_type(left, int)) {
+        if (is_type(left, bool)) {
+            resLeft = { std::get<bool>(left) };
+        } else if (is_type(left, int)) {
             resLeft = std::get<int>(left) == 1;
         }
-        if(is_type(right, bool)) {
+        if (is_type(right, bool)) {
             resRight = std::get<bool>(right);
-        } else if(is_type(right, int)) {
+        } else if (is_type(right, int)) {
             resRight = std::get<int>(right) == 1;
         }
-        if(is_type(left, float) || is_type(right, float)) {
+        if (is_type(left, float) || is_type(right, float)) {
             throw SyntaxError("Invalid AND operation, float are not supported");
         }
         return resLeft && resRight;
@@ -221,18 +221,18 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         auto right = evaluate(andNode.right);
         bool resLeft = false;
         bool resRight = false;
-        if(is_type(left, bool)) {
+        if (is_type(left, bool)) {
             resLeft = std::get<bool>(left);
-        } else if(is_type(left, int)) {
+        } else if (is_type(left, int)) {
             resLeft = std::get<int>(left) == 1;
         }
-        if(is_type(right, bool)) {
+        if (is_type(right, bool)) {
             resRight = std::get<bool>(right);
-        } else if(is_type(right, int)) {
+        } else if (is_type(right, int)) {
             resRight = std::get<int>(right) == 1;
         }
 
-        if(is_type(left, float) || is_type(right, float)) {
+        if (is_type(left, float) || is_type(right, float)) {
             throw SyntaxError("Invalid AND operation, float are not supported");
         }
         return resLeft && resRight;
@@ -240,24 +240,24 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         auto equalNode = std::get<prism::ast::EqualNode>(node->node);
         auto left = evaluate(equalNode.left);
         auto right = evaluate(equalNode.right);
-        
-        if(is_type(left, bool) && is_type(right, bool)) {
+
+        if (is_type(left, bool) && is_type(right, bool)) {
             return std::get<bool>(left) == std::get<bool>(right);
         }
 
-        if(is_type(left, int) && is_type(right, int)) {
+        if (is_type(left, int) && is_type(right, int)) {
             return std::get<int>(left) == std::get<int>(right);
         }
 
-        if(is_type(left, int) && is_type(right, bool)) {
+        if (is_type(left, int) && is_type(right, bool)) {
             return std::get<int>(left) == (std::get<bool>(right) ? 1 : 0);
         }
 
-        if(is_type(left, bool) && is_type(right, int)) {
+        if (is_type(left, bool) && is_type(right, int)) {
             return (std::get<bool>(left) ? 1 : 0) == std::get<int>(right);
         }
 
-        if(is_type(left, float) && is_type(right, float)) {
+        if (is_type(left, float) && is_type(right, float)) {
             return std::get<float>(left) == std::get<float>(right);
         }
 
@@ -266,26 +266,26 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         auto rangeNode = std::get<prism::ast::RangeNode>(node->node);
         auto start = evaluate(rangeNode.left);
         auto end = evaluate(rangeNode.right);
-        if(!is_type(start, int) || !is_type(end, int)){
+        if (!is_type(start, int) || !is_type(end, int)) {
             throw SyntaxError("Invalid range");
         }
 
-        return prism::GeneratedRange{(size_t) std::get<int>(start), (size_t) std::get<int>(end)};
+        return prism::GeneratedRange{ (size_t) std::get<int>(start), (size_t) std::get<int>(end) };
     } else if (is_type(node->node, prism::ast::IfNode)) {
         auto ifNode = std::get<prism::ast::IfNode>(node->node);
         auto condition = evaluate(ifNode.condition);
 
-        if(is_type(condition, bool) || is_type(condition, int)) {
+        if (is_type(condition, bool) || is_type(condition, int)) {
             if (std::get<bool>(condition) || std::get<int>(condition) == 1) {
                 return evaluate(ifNode.body);
-            } else if(!ifNode.elseIfs->empty()) {
-                for(const auto& elseIf : *ifNode.elseIfs){
+            } else if (!ifNode.elseIfs->empty()) {
+                for (const auto& elseIf : *ifNode.elseIfs) {
                     condition = evaluate(elseIf->condition);
-                    if(is_type(condition, bool) && std::get<bool>(condition)){
+                    if (is_type(condition, bool) && std::get<bool>(condition)) {
                         return evaluate(elseIf->body);
                     }
                 }
-            } else if(ifNode.elseBody) {
+            } else if (ifNode.elseBody) {
                 return evaluate(ifNode.elseBody);
             }
         }
@@ -295,18 +295,18 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         auto func = std::get<prism::ast::FunctionCallNode>(node->node);
         if (m_items.contains(func.name->name)) {
             auto value = m_items.at(func.name->name);
-            if(is_type(value, InvokeFunc)) {
+            if (is_type(value, InvokeFunc)) {
                 std::vector<uintptr_t> args;
-                for(const auto& arg : *func.args){
+                for (const auto& arg : *func.args) {
                     ContextTypes type = evaluate(arg);
-                    args.push_back((uintptr_t) new ContextTypes{type});
+                    args.push_back((uintptr_t) new ContextTypes{ type });
                 }
                 auto ptr = std::get<InvokeFunc>(value);
                 auto raw = invoke(ptr, args.data(), args.size());
-                if(raw == (uintptr_t) nullptr){
+                if (raw == (uintptr_t) nullptr) {
                     throw SyntaxError("Failed to execute function");
                 }
-                for(auto& c : args){
+                for (auto& c : args) {
                     delete (ContextTypes*) c;
                 }
                 args.clear();
@@ -322,7 +322,7 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
     return false;
 }
 
-std::string get_parenthesis(std::string::iterator& c, std::string::iterator end){
+std::string get_parenthesis(std::string::iterator& c, std::string::iterator end) {
     auto start = c;
     int parenthesis = 0;
     while (c != end) {
@@ -341,10 +341,10 @@ std::string get_parenthesis(std::string::iterator& c, std::string::iterator end)
         throw prism::SyntaxError("Unterminated parenthesis");
     }
     c++;
-    return {start, c};
+    return { start, c };
 }
 
-std::shared_ptr<prism::ast::ASTNode> parse_parenthesis(std::string::iterator& c, std::string::iterator end){
+std::shared_ptr<prism::ast::ASTNode> parse_parenthesis(std::string::iterator& c, std::string::iterator end) {
     prism::lexer::Lexer eval(get_parenthesis(c, end));
     auto tokens = eval.tokenize();
     prism::ast::Parser parser(tokens);
@@ -352,8 +352,8 @@ std::shared_ptr<prism::ast::ASTNode> parse_parenthesis(std::string::iterator& c,
     return ast;
 }
 
-std::string get_accolade(std::string::iterator& c, std::string::iterator end){
-    auto start = c+1;
+std::string get_accolade(std::string::iterator& c, std::string::iterator end) {
+    auto start = c + 1;
     int accolade = 0;
     while (c != end) {
         if (*c == '{') {
@@ -375,7 +375,7 @@ std::string get_accolade(std::string::iterator& c, std::string::iterator end){
     return result;
 }
 
-std::shared_ptr<prism::ast::ASTNode> parse_accolade(std::string::iterator& c, std::string::iterator end){
+std::shared_ptr<prism::ast::ASTNode> parse_accolade(std::string::iterator& c, std::string::iterator end) {
     prism::lexer::Lexer eval(get_accolade(c, end));
     auto tokens = eval.tokenize();
     prism::ast::Parser parser(tokens);
@@ -383,37 +383,39 @@ std::shared_ptr<prism::ast::ASTNode> parse_accolade(std::string::iterator& c, st
     return ast;
 }
 
-std::string get_keyword(std::string::iterator& c, std::string::iterator end){
+std::string get_keyword(std::string::iterator& c, std::string::iterator end) {
     auto start = c;
-    char match[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '_'};
+    char match[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
+                     's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+                     'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '_' };
     while (std::find(std::begin(match), std::end(match), *c) != std::end(match) && c != end) {
         c++;
     }
-    return {start, c};
+    return { start, c };
 }
 
-std::shared_ptr<std::vector<std::shared_ptr<prism::Node>>> get_children(const std::shared_ptr<prism::Node>& node){
-    if(is_type(node->node, prism::RootNode)){
+std::shared_ptr<std::vector<std::shared_ptr<prism::Node>>> get_children(const std::shared_ptr<prism::Node>& node) {
+    if (is_type(node->node, prism::RootNode)) {
         return std::get<prism::RootNode>(node->node).children;
     }
-    if(is_type(node->node, prism::IfNode)){
+    if (is_type(node->node, prism::IfNode)) {
         return std::get<prism::IfNode>(node->node).children;
     }
-    if(is_type(node->node, prism::ElseNode)){
+    if (is_type(node->node, prism::ElseNode)) {
         return std::get<prism::ElseNode>(node->node).children;
     }
-    if(is_type(node->node, prism::ElseIfNode)){
+    if (is_type(node->node, prism::ElseIfNode)) {
         return std::get<prism::ElseIfNode>(node->node).children;
     }
-    if(is_type(node->node, prism::ForNode)){
+    if (is_type(node->node, prism::ForNode)) {
         return std::get<prism::ForNode>(node->node).children;
     }
     throw prism::SyntaxError("Unsupported node type");
 }
 
-bool is_on_the_same_line(std::string::iterator& c, std::string::iterator end){
-    while(*c != '\n'){
-        if(*c == ';'){
+bool is_on_the_same_line(std::string::iterator& c, std::string::iterator end) {
+    while (*c != '\n') {
+        if (*c == ';') {
             return true;
         }
         c++;
@@ -422,38 +424,42 @@ bool is_on_the_same_line(std::string::iterator& c, std::string::iterator end){
 }
 
 prism::Node prism::Processor::parse(std::string input) {
-    std::shared_ptr<prism::Node> root = std::make_shared<prism::Node>(prism::RootNode{std::make_shared<std::vector<std::shared_ptr<prism::Node>>>()}, nullptr);
+    std::shared_ptr<prism::Node> root = std::make_shared<prism::Node>(
+        prism::RootNode{ std::make_shared<std::vector<std::shared_ptr<prism::Node>>>() }, nullptr);
     auto current = root;
     auto children = std::get<prism::RootNode>(root->node).children;
     auto c = input.begin();
     auto previous = c;
     while (c != input.end()) {
         if (*c == '@') {
-            children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c)}, current));
+            children->push_back(std::make_shared<prism::Node>(prism::TextNode{ std::string(previous, c) }, current));
             c++;
             if (*c == '{') {
                 auto ast = parse_accolade(c, input.end());
-                children->push_back(std::make_shared<prism::Node>(prism::VariableNode{ast}, current));
+                children->push_back(std::make_shared<prism::Node>(prism::VariableNode{ ast }, current));
                 previous = c;
             } else {
                 auto expr = get_keyword(c, input.end());
                 previous = c;
-                if(m_items.contains(expr)){
-                    children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::get<std::string>(m_items[expr])}, current));
+                if (m_items.contains(expr)) {
+                    children->push_back(std::make_shared<prism::Node>(
+                        prism::TextNode{ std::get<std::string>(m_items[expr]) }, current));
                 } else if (expr == "if") {
                     auto ast = parse_parenthesis(c, input.end());
                     previous = c;
 
-                    children->push_back(std::make_shared<prism::Node>(prism::IfNode{ast, std::make_shared<std::vector<std::shared_ptr<prism::Node>>>()}, current));
+                    children->push_back(std::make_shared<prism::Node>(
+                        prism::IfNode{ ast, std::make_shared<std::vector<std::shared_ptr<prism::Node>>>() }, current));
                     current = children->back();
                     children = std::get<prism::IfNode>(current->node).children;
 
                     bool sameLine = is_on_the_same_line(c, input.end());
-                    if(sameLine){
+                    if (sameLine) {
                         while (*c != '\n') {
                             c++;
                         }
-                        children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c+1)}, current));
+                        children->push_back(
+                            std::make_shared<prism::Node>(prism::TextNode{ std::string(previous, c + 1) }, current));
                         previous = c;
                         current = current->parent;
                         children = get_children(current);
@@ -467,7 +473,8 @@ prism::Node prism::Processor::parse(std::string input) {
                     current = current->parent;
                     children = get_children(current);
 
-                    auto newNode = std::make_shared<prism::Node>(prism::ElseNode{std::make_shared<std::vector<std::shared_ptr<prism::Node>>>()}, current);
+                    auto newNode = std::make_shared<prism::Node>(
+                        prism::ElseNode{ std::make_shared<std::vector<std::shared_ptr<prism::Node>>>() }, current);
                     if (is_type(ifNode->node, prism::ElseIfNode)) {
                         ifNode = std::get<prism::ElseIfNode>(ifNode->node).parentIf;
                     }
@@ -480,11 +487,12 @@ prism::Node prism::Processor::parse(std::string input) {
                     children = std::get<prism::ElseNode>(current->node).children;
 
                     bool sameLine = is_on_the_same_line(c, input.end());
-                    if(sameLine){
+                    if (sameLine) {
                         while (*c != '\n') {
                             c++;
                         }
-                        children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c+1)}, current));
+                        children->push_back(
+                            std::make_shared<prism::Node>(prism::TextNode{ std::string(previous, c + 1) }, current));
                         previous = c;
                         current = current->parent;
                         children = get_children(current);
@@ -505,7 +513,9 @@ prism::Node prism::Processor::parse(std::string input) {
                     auto ast = parse_parenthesis(c, input.end());
                     previous = c;
 
-                    auto newNode = std::make_shared<prism::Node>(prism::ElseIfNode{ast, std::make_shared<std::vector<std::shared_ptr<prism::Node>>>(), ifNode}, current);
+                    auto newNode = std::make_shared<prism::Node>(
+                        prism::ElseIfNode{ ast, std::make_shared<std::vector<std::shared_ptr<prism::Node>>>(), ifNode },
+                        current);
                     auto ifNodePtr = std::get<prism::IfNode>(ifNode->node);
                     ifNodePtr.elseIfs.push_back(newNode);
                     ifNode->node = ifNodePtr;
@@ -515,11 +525,12 @@ prism::Node prism::Processor::parse(std::string input) {
                     children = std::get<prism::ElseIfNode>(current->node).children;
 
                     bool sameLine = is_on_the_same_line(c, input.end());
-                    if(sameLine){
+                    if (sameLine) {
                         while (*c != '\n') {
                             c++;
                         }
-                        children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c+1)}, current));
+                        children->push_back(
+                            std::make_shared<prism::Node>(prism::TextNode{ std::string(previous, c + 1) }, current));
                         previous = c;
                         current = current->parent;
                         children = get_children(current);
@@ -528,16 +539,18 @@ prism::Node prism::Processor::parse(std::string input) {
                     auto ast = parse_parenthesis(c, input.end());
                     previous = c;
 
-                    children->push_back(std::make_shared<prism::Node>(prism::ForNode{ast, std::make_shared<std::vector<std::shared_ptr<prism::Node>>>()}, current));
+                    children->push_back(std::make_shared<prism::Node>(
+                        prism::ForNode{ ast, std::make_shared<std::vector<std::shared_ptr<prism::Node>>>() }, current));
                     current = children->back();
                     children = std::get<prism::ForNode>(current->node).children;
 
                     bool sameLine = is_on_the_same_line(c, input.end());
-                    if(sameLine){
+                    if (sameLine) {
                         while (*c != '\n') {
                             c++;
                         }
-                        children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c+1)}, current));
+                        children->push_back(
+                            std::make_shared<prism::Node>(prism::TextNode{ std::string(previous, c + 1) }, current));
                         previous = c;
                         current = current->parent;
                         children = get_children(current);
@@ -555,7 +568,7 @@ prism::Node prism::Processor::parse(std::string input) {
         c++;
     }
 
-    children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::string(previous, c)}, current));
+    children->push_back(std::make_shared<prism::Node>(prism::TextNode{ std::string(previous, c) }, current));
 
     if (current != root) {
         throw prism::SyntaxError("Unterminated block");
@@ -566,15 +579,16 @@ prism::Node prism::Processor::parse(std::string input) {
 void prism::Processor::evaluate_node(std::shared_ptr<std::vector<std::shared_ptr<prism::Node>>>& children) {
     for (const auto& child : *children) {
         if (is_type(child->node, prism::TextNode)) {
-            auto result = std::get<prism::TextNode>(child->node).text; // gv::trim(std::get<prism::TextNode>(child->node).text);
+            auto result =
+                std::get<prism::TextNode>(child->node).text; // gv::trim(std::get<prism::TextNode>(child->node).text);
             gv::ltrim(result);
-            if(!gv::trim(result).empty()){
+            if (!gv::trim(result).empty()) {
                 m_output << result;
             }
         } else if (is_type(child->node, prism::VariableNode)) {
             auto var = std::get<prism::VariableNode>(child->node);
             auto value = evaluate(var.name);
-            if(is_type(value, bool)){
+            if (is_type(value, bool)) {
                 m_output << (std::get<bool>(value) ? "true" : "false");
             } else if (is_type(value, int)) {
                 m_output << std::get<int>(value);
@@ -590,14 +604,14 @@ void prism::Processor::evaluate_node(std::shared_ptr<std::vector<std::shared_ptr
         } else if (is_type(child->node, prism::IfNode)) {
             auto ifNode = std::get<prism::IfNode>(child->node);
             auto condition = evaluate(ifNode.condition);
-            if((is_type(condition, bool) && std::get<bool>(condition)) ||
-                (is_type(condition, int) && std::get<int>(condition) == 1)){
+            if ((is_type(condition, bool) && std::get<bool>(condition)) ||
+                (is_type(condition, int) && std::get<int>(condition) == 1)) {
                 evaluate_node(ifNode.children);
             } else if (!ifNode.elseIfs.empty()) {
                 for (const auto& node : ifNode.elseIfs) {
                     auto elseIf = std::get<prism::ElseIfNode>(node->node);
                     condition = evaluate(elseIf.condition);
-                    if((is_type(condition, bool) && std::get<bool>(condition)) ||
+                    if ((is_type(condition, bool) && std::get<bool>(condition)) ||
                         (is_type(condition, int) && std::get<int>(condition) == 1)) {
                         evaluate_node(elseIf.children);
                     }
@@ -606,26 +620,26 @@ void prism::Processor::evaluate_node(std::shared_ptr<std::vector<std::shared_ptr
                 auto elseNode = std::get<prism::ElseNode>(ifNode.elseBody->node);
                 evaluate_node(elseNode.children);
             }
-            
+
         } else if (is_type(child->node, prism::ForNode)) {
             auto forNode = std::get<prism::ForNode>(child->node);
             auto context = std::get<prism::ForContext>(evaluate(forNode.condition));
 
-            if(is_type(context.iterator, GeneratedRange)){
+            if (is_type(context.iterator, GeneratedRange)) {
                 auto range = std::get<GeneratedRange>(context.iterator);
                 auto var = context.name;
-                for(auto i = range.start; i < range.end; i++){
-                    m_items[var] = ContextTypes{(int) i};
+                for (auto i = range.start; i < range.end; i++) {
+                    m_items[var] = ContextTypes{ (int) i };
                     evaluate_node(forNode.children);
                 }
                 m_items.erase(var);
-            } else if(is_type(context.iterator, MTDArray<bool>)) {
+            } else if (is_type(context.iterator, MTDArray<bool>)) {
                 array_iterate<bool>(forNode, context);
-            } else if(is_type(context.iterator, MTDArray<int>)) {
+            } else if (is_type(context.iterator, MTDArray<int>)) {
                 array_iterate<int>(forNode, context);
-            } else if(is_type(context.iterator, MTDArray<float>)) {
+            } else if (is_type(context.iterator, MTDArray<float>)) {
                 array_iterate<float>(forNode, context);
-            } 
+            }
         }
     }
 }
@@ -699,38 +713,38 @@ std::string prism::Processor::process() {
     return m_output.str();
 }
 
-void prism::delete_node(std::shared_ptr<prism::Node>& node){
+void prism::delete_node(std::shared_ptr<prism::Node>& node) {
     if (node == nullptr) {
         return;
     }
-    if(is_type(node->node, prism::RootNode)){
-        for(const auto& child : *std::get<prism::RootNode>(node->node).children){
+    if (is_type(node->node, prism::RootNode)) {
+        for (const auto& child : *std::get<prism::RootNode>(node->node).children) {
             delete_node((std::shared_ptr<prism::Node>&) child);
         }
     }
-    if(is_type(node->node, prism::IfNode)){
-        for(const auto& child : *std::get<prism::IfNode>(node->node).children){
+    if (is_type(node->node, prism::IfNode)) {
+        for (const auto& child : *std::get<prism::IfNode>(node->node).children) {
             delete_node((std::shared_ptr<prism::Node>&) child);
         }
-        for(const auto& child : std::get<prism::IfNode>(node->node).elseIfs){
+        for (const auto& child : std::get<prism::IfNode>(node->node).elseIfs) {
             delete_node((std::shared_ptr<prism::Node>&) child);
         }
-        if(std::get<prism::IfNode>(node->node).elseBody){
+        if (std::get<prism::IfNode>(node->node).elseBody) {
             delete_node(std::get<prism::IfNode>(node->node).elseBody);
         }
     }
-    if(is_type(node->node, prism::ElseNode)){
-        for(const auto& child : *std::get<prism::ElseNode>(node->node).children){
+    if (is_type(node->node, prism::ElseNode)) {
+        for (const auto& child : *std::get<prism::ElseNode>(node->node).children) {
             delete_node((std::shared_ptr<prism::Node>&) child);
         }
     }
-    if(is_type(node->node, prism::ElseIfNode)){
-        for(const auto& child : *std::get<prism::ElseIfNode>(node->node).children){
+    if (is_type(node->node, prism::ElseIfNode)) {
+        for (const auto& child : *std::get<prism::ElseIfNode>(node->node).children) {
             delete_node((std::shared_ptr<prism::Node>&) child);
         }
     }
-    if(is_type(node->node, prism::ForNode)){
-        for(const auto& child : *std::get<prism::ForNode>(node->node).children){
+    if (is_type(node->node, prism::ForNode)) {
+        for (const auto& child : *std::get<prism::ForNode>(node->node).children) {
             delete_node((std::shared_ptr<prism::Node>&) child);
         }
     }

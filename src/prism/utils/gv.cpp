@@ -30,10 +30,9 @@ std::vector<std::string> prism::gv::parenthesis(const std::string line) {
 std::vector<std::string> prism::gv::fn_args(const std::string line) {
     std::vector<std::string> result;
     std::regex re(R"(\s*,\s*)");
-    std::sregex_token_iterator first{line.begin(), line.end(), re, -1}, last;
+    std::sregex_token_iterator first{ line.begin(), line.end(), re, -1 }, last;
 
-    std::copy_if(first, last, std::back_inserter(result), 
-                 [](const std::string& s) { return !s.empty(); });
+    std::copy_if(first, last, std::back_inserter(result), [](const std::string& s) { return !s.empty(); });
     return result;
 }
 
@@ -42,7 +41,7 @@ std::unordered_map<std::string, std::optional<std::string>> prism::gv::il_args(c
     auto args = fn_args(line);
     for (const auto& arg : args) {
         auto parts = split(arg, '=');
-        if(!parts.empty()) {
+        if (!parts.empty()) {
             result[parts[0]] = parts[1];
         }
     }
