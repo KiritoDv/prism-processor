@@ -21,9 +21,9 @@ enum {
     SHADER_NOISE
 };
 
-prism::ContextTypes add_text(std::vector<prism::ContextTypes> args) {
+prism::ContextTypes add_text(prism::ContextTypes arg1, prism::ContextTypes arg2, prism::ContextTypes arg3) {
     std::string items = "";
-    for (int i = 0; i<args.size(); i++) {
+    for (int i = 0; i<3; i++) {
         items += "add";
     }
     return prism::ContextTypes{items};
@@ -107,24 +107,33 @@ static const char* shader_item_to_str(uint32_t item, bool with_alpha, bool only_
 }
 
 bool get_bool(prism::ContextTypes value) {
-    if (std::holds_alternative<bool>(value.value)) {
-        return std::get<bool>(value.value);
-    } else if (std::holds_alternative<int>(value.value)) {
-        return std::get<int>(value.value) == 1;
+    if (std::holds_alternative<bool>(value)) {
+        return std::get<bool>(value);
+    } else if (std::holds_alternative<int>(value)) {
+        return std::get<int>(value) == 1;
     }
     return false;
 }
 
-prism::ContextTypes append_formula(std::vector<prism::ContextTypes> args) {
+prism::ContextTypes append_formula(
+    prism::ContextTypes a_arg,
+    prism::ContextTypes a_single,
+    prism::ContextTypes a_mult,
+    prism::ContextTypes a_mix,
+    prism::ContextTypes a_with_alpha,
+    prism::ContextTypes a_only_alpha,
+    prism::ContextTypes a_alpha,
+    prism::ContextTypes a_first_cycle
+) {
     // uint8_t c[2][4] = 
-    auto c = std::get<prism::MTDArray<int>>(args[0].value); 
-    bool do_single = get_bool(args[1]);
-    bool do_multiply = get_bool(args[2]);
-    bool do_mix = get_bool(args[3]);
-    bool with_alpha = get_bool(args[4]);
-    bool only_alpha = get_bool(args[5]);
-    bool opt_alpha = get_bool(args[6]);
-    bool first_cycle = get_bool(args[7]);
+    auto c = std::get<prism::MTDArray<int>>(a_arg); 
+    bool do_single = get_bool(a_single);
+    bool do_multiply = get_bool(a_mult);
+    bool do_mix = get_bool(a_mix);
+    bool with_alpha = get_bool(a_with_alpha);
+    bool only_alpha = get_bool(a_only_alpha);
+    bool opt_alpha = get_bool(a_alpha);
+    bool first_cycle = get_bool(a_first_cycle);
     std::string out = "";
     if (do_single) {
         out += shader_item_to_str(c.at(only_alpha, 3), with_alpha, only_alpha, opt_alpha, first_cycle, false);
@@ -192,7 +201,7 @@ int main(int argc, char** argv) {
         VAR("o_three_point_filter", true),
         VAR("o_2cyc", true),
         VAR("o_c", M_ARRAY(o_c, int, 2, 2, 4)),
-        VAR("add_text", add_text),
+        VAR("add_text", (InvokeFunc) add_text),
         VAR("o_color_alpha_same", M_ARRAY(o_color_alpha_same, int, 2)),
         VAR("SHADER_0", SHADER_0),
         VAR("SHADER_INPUT_1", SHADER_INPUT_1),
@@ -209,7 +218,7 @@ int main(int argc, char** argv) {
         VAR("SHADER_1", SHADER_1),
         VAR("SHADER_COMBINED", SHADER_COMBINED),
         VAR("SHADER_NOISE", SHADER_NOISE),
-        VAR("append_formula", append_formula),
+        VAR("append_formula", (InvokeFunc) append_formula),
         VAR("o_do_single", M_ARRAY(o_do_single, int, 2, 2)),
         VAR("o_do_multiply", M_ARRAY(o_do_multiply, int, 2, 2)),
         VAR("o_do_mix", M_ARRAY(o_do_mix, int, 2, 2)),

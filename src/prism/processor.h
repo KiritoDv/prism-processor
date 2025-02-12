@@ -9,6 +9,7 @@
 
 #include "lexer.h"
 #include "ast.h"
+#include "utils/invoke.h"
 #include "utils/exceptions.h"
 
 #define is_type(var, type) std::holds_alternative<type>((var))
@@ -16,7 +17,6 @@
 #define VAR(name, type) {name, prism::ContextTypes{type}}
 
 namespace prism {
-
     // todo: handle out of bounds access
     template<typename T>
     struct MTDArray {
@@ -76,9 +76,7 @@ namespace prism {
 
     struct Void {};
 
-    struct ContextTypes {
-        std::variant<Void, bool, int, float, MTDArray<bool>, MTDArray<int>, MTDArray<float>, GeneratedRange, std::string, ForContext, ContextTypes (*)(std::vector<ContextTypes>)> value;
-    };
+    typedef std::variant<Void, bool, int, float, MTDArray<bool>, MTDArray<int>, MTDArray<float>, GeneratedRange, std::string, ForContext, InvokeFunc> ContextTypes;
     typedef std::unordered_map<std::string, ContextTypes> ContextItems;
 
     enum class ScopeType {

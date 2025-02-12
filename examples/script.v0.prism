@@ -1,11 +1,13 @@
 @prism(type='vertex', name='script', version='1.0.0', description='A GLSL Shader that uses prism', author='Prism Developers')
 
-@{print("Hello, World!")}
+@{add_text("Hello, World!", "Wtf this worked", "Its cursed i know")}
 
 @if(o_textures[0])
 in vec2 vTexCoord0;
 uniform sampler2D uTex0;
 @end
+
+@if(o_clamp[0]) in vec2 vTexClampS0;
 
 @if(o_textures[1])
 in vec2 vTexCoord1;
