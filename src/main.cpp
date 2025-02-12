@@ -205,6 +205,7 @@ int main(int argc, char** argv) {
         VAR("srgb_mode", true),
         VAR("core_opengl", false),
         VAR("opengles", false),
+        VAR("vOutColor", "gl_Position"),
         VAR("o_current_filter", 0),
         VAR("o_c", M_ARRAY(o_c, int, 3, 2, 4)),
         VAR("add_text", (InvokeFunc) add_text),

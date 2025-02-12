@@ -189,12 +189,12 @@ void main() {
         @if(o_invisible)
             texel.a = 0.0;
         @end
-        @vOutColor = texel;
+        @{vOutColor} = texel;
     @else
-        @vOutColor = vec4(texel, 1.0);
+        @{vOutColor} = vec4(texel, 1.0);
     @end
 
     @if(srgb_mode)
-        @vOutColor = fromLinear(@vOutColor);
+        @{vOutColor} = fromLinear(@{vOutColor});
     @end
 }

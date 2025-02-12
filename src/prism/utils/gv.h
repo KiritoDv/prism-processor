@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 #include <optional>
 #include <unordered_map>
 #include "exceptions.h"
@@ -22,6 +23,15 @@ inline std::string trim(std::string cpy) {
     ltrim(cpy);
     rtrim(cpy);
     return cpy;
+}
+inline std::vector<std::string> new_line_split(std::string str) {
+    auto result = std::vector<std::string>{};
+    auto ss = std::stringstream{ str };
+
+    for (std::string line; std::getline(ss, line, '\n');)
+        result.push_back(line);
+
+    return result;
 }
 template <typename T> T get(const std::string& arg) {
     // String

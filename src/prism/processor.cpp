@@ -662,12 +662,8 @@ prism::Node prism::Processor::parse(std::string input) {
 void prism::Processor::evaluate_node(std::shared_ptr<std::vector<std::shared_ptr<prism::Node>>>& children) {
     for (const auto& child : *children) {
         if (is_type(child->node, prism::TextNode)) {
-            auto result =
-                std::get<prism::TextNode>(child->node).text; // gv::trim(std::get<prism::TextNode>(child->node).text);
-            gv::ltrim(result);
-            if (!gv::trim(result).empty()) {
-                m_output << result;
-            }
+            auto result = std::get<prism::TextNode>(child->node).text;
+            m_output << result;
         } else if (is_type(child->node, prism::VariableNode)) {
             auto var = std::get<prism::VariableNode>(child->node);
             auto value = evaluate(var.name);
@@ -793,7 +789,17 @@ std::string prism::Processor::process() {
     for (const auto& child : *std::get<prism::RootNode>(node.node).children) {
         delete_node((std::shared_ptr<prism::Node>&) child);
     }
-    return m_output.str();
+
+    std::stringstream result;
+    auto lines = gv::new_line_split(m_output.str());
+    for (const auto& line : lines) {
+        auto trimmed = gv::trim(line);
+        if (trimmed.empty()) {
+            continue;
+        }
+        result << trimmed << std::endl;
+    }
+    return result.str();
 }
 
 void prism::delete_node(std::shared_ptr<prism::Node>& node) {
