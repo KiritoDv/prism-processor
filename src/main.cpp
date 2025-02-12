@@ -186,7 +186,7 @@ int main(int argc, char** argv) {
 
     prism::ContextItems vars = {
         VAR("GLSL_VERSION", "#version 410 core"),
-        VAR("input", "in"),
+        VAR("attr", "in"),
         VAR("o_textures", M_ARRAY(o_textures, int, 2)),
         VAR("o_clamp", M_ARRAY(o_clamp, int, 2, 2)),
         VAR("o_float", M_ARRAY(o_float, float, 6)),

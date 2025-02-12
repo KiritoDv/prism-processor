@@ -1,27 +1,27 @@
 @prism(type='fragment', name='Fast3D Fragment Shader', version='1.0.0', description='Ported shader to prism', author='Emill & Prism Team')
 
-@GLSL_VERSION
+@{GLSL_VERSION}
 
 @for(i in 0..2)
     @if(o_textures[i])
-        @input vec2 vTexCoord@{i};
+        @{attr} vec2 vTexCoord@{i};
         @for(j in 0..2)
             @if(o_clamp[i][j])
                 @if(j == 0)
-                    @input float vTexClampS@{i};
+                    @{attr} float vTexClampS@{i};
                 @else
-                    @input float vTexClampT@{i};
+                    @{attr} float vTexClampT@{i};
                 @end
             @end
         @end
     @end
 @end
 
-@if(o_fog) @input vec4 vFog;
-@if(o_grayscale) @input vec4 vGrayscaleColor;
+@if(o_fog) @{attr} vec4 vFog;
+@if(o_grayscale) @{attr} vec4 vGrayscaleColor;
 
 @for(i in 0..o_inputs) 
-    @input vec@{if o_alpha then 4 else 3} vInput@{i + 1};
+    @{attr} vec@{if o_alpha then 4 else 3} vInput@{i + 1};
 @end
 
 @if(o_textures[0]) uniform sampler2D uTex0;

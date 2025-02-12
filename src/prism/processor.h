@@ -105,9 +105,6 @@ struct RootNode {
 struct TextNode {
     std::string text;
 };
-struct ReplaceNode {
-    std::string text;
-};
 struct VariableNode {
     std::shared_ptr<ast::ASTNode> name;
 };
@@ -131,7 +128,7 @@ struct ForNode {
 };
 struct EndNode {};
 
-typedef std::variant<RootNode, TextNode, ReplaceNode, VariableNode, IfNode, ElseIfNode, ElseNode, ForNode, EndNode> NodeType;
+typedef std::variant<RootNode, TextNode, VariableNode, IfNode, ElseIfNode, ElseNode, ForNode, EndNode> NodeType;
 
 void delete_node(std::shared_ptr<prism::Node>& node);
 
