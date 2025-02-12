@@ -122,6 +122,17 @@ void main() {
             @end
         @end
 
-        
+        @if(!o_color_alpha_same[c] && o_alpha)
+            texel = vec4(@{
+            append_formula(o_c[c], o_do_single[c][0],
+                           o_do_multiply[c][0], o_do_mix[c][0], false, false, true, c == 0)
+            }, @{append_formula(o_c[c], o_do_single[c][1],
+                           o_do_multiply[c][1], o_do_mix[c][1], true, true, true, c == 0)
+            });
+        @else
+            texel = @{append_formula(o_c[c], o_do_single[c][0],
+                           o_do_multiply[c][0], o_do_mix[c][0], o_alpha, false,
+                           o_alpha, c == 0)};
+        @end
     @end
 }
