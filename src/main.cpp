@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
     int o_masks[2] = { 1, 1 };
     int o_blend[2] = { 1, 1 };
     int o_c[2][2][4] = { { { 1, 1, 1, 1 }, { 1, 1, 1, 1 } }, { { 1, 1, 1, 1 }, { 1, 1, 1, 1 } } };
-    int o_color_alpha_same[2] = { 1, 1 };
+    int o_color_alpha_same[2] = { 0, 0 };
     int o_do_single[2][2] = { { 1, 1 }, { 1, 1 } };
     int o_do_multiply[2][2] = { { 1, 1 }, { 1, 1 } };
     int o_do_mix[2][2] = { { 1, 1 }, { 1, 1 } };

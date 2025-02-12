@@ -554,6 +554,7 @@ void prism::Processor::evaluate_node(std::shared_ptr<std::vector<std::shared_ptr
     for (const auto& child : *children) {
         if (is_type(child->node, prism::TextNode)) {
             auto result = std::get<prism::TextNode>(child->node).text; // gv::trim(std::get<prism::TextNode>(child->node).text);
+            gv::ltrim(result);
             if(!gv::trim(result).empty()){
                 m_output << result;
             }
