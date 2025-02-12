@@ -84,13 +84,13 @@ prism::ContextTypes ReadArrayByType(prism::Processor* proc, prism::ast::ArrayAcc
 
 #define g_idx(x) std::get<int>(proc->evaluate(indices->at(x)).value)
     if(diff > 0){
-        switch (diff) {
+        switch (diff-1) {
             case 1:
                 return prism::ContextTypes{arrayVar.get(g_idx(0))};
             case 2:
-                return prism::ContextTypes{arrayVar.get(g_idx(1), g_idx(0))};
+                return prism::ContextTypes{arrayVar.get(g_idx(0), g_idx(1))};
             case 3:
-                return prism::ContextTypes{arrayVar.get(g_idx(2), g_idx(1), g_idx(0))};
+                return prism::ContextTypes{arrayVar.get(g_idx(0), g_idx(1), g_idx(2))};
             default:
                 throw prism::SyntaxError("We dont support array indexes bigger than 3");
         }
@@ -101,11 +101,11 @@ prism::ContextTypes ReadArrayByType(prism::Processor* proc, prism::ast::ArrayAcc
             return prism::ContextTypes{arrayVar.at(g_idx(0))};
         }
         case 2:
-            return prism::ContextTypes{arrayVar.at(g_idx(1), g_idx(0))};
+            return prism::ContextTypes{arrayVar.at(g_idx(0), g_idx(1))};
         case 3:
-            return prism::ContextTypes{arrayVar.at(g_idx(2), g_idx(1), g_idx(0))};
+            return prism::ContextTypes{arrayVar.at(g_idx(0), g_idx(1), g_idx(2))};
         case 4:
-            return prism::ContextTypes{arrayVar.at(g_idx(3), g_idx(2), g_idx(1), g_idx(0))};
+            return prism::ContextTypes{arrayVar.at(g_idx(0), g_idx(1), g_idx(2), g_idx(3))};
     }
 #undef g_idx
     throw prism::SyntaxError("We dont support array indexes bigger than 4");
