@@ -32,7 +32,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 file(GLOB_RECURSE CXX_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/lib/strhash64/*.cpp)
 file(GLOB_RECURSE C_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.c ${CMAKE_CURRENT_SOURCE_DIR}/lib/**/*.c)
-set(SRC_DIR ${CXX_FILES} ${C_FILES} ${LGFXD_FILES})
+set(SRC_DIR ${CXX_FILES} ${C_FILES})
 
 if(ENABLE_ASAN)
     add_compile_options(-fsanitize=address)

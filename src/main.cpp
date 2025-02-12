@@ -1,5 +1,7 @@
 #include "prism/processor.h"
 
+#ifdef STANDALONE
+
 #include <spdlog/spdlog.h>
 #include <fstream>
 
@@ -230,3 +232,4 @@ int main(int argc, char** argv) {
     SPDLOG_INFO("Processed data: \n{}", processor.process());
     return 0;
 }
+#endif
