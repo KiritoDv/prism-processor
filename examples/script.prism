@@ -1,37 +1,37 @@
 @prism(type='vertex', name='script', version='1.0.0', description='A GLSL Shader that uses prism', author='Prism Developers')
 
-@if(x_textures[0])
+@if(o_textures[0])
 in vec2 vTexCoord0;
 uniform sampler2D uTex0;
 @end
 
-@if(x_textures[1])
+@if(o_textures[1])
 in vec2 vTexCoord1;
 uniform sampler2D uTex1;
 @end
 
-@if(x_clamp[0][0]) in vec2 vTexClampS0;
-@if(x_clamp[0][1]) in vec2 vTexClampT0;
-@if(x_clamp[1][0]) in vec2 vTexClampS1;
-@if(x_clamp[0][1]) in vec2 vTexClampT1;
+@if(o_clamp[0][0]) in vec2 vTexClampS0;
+@if(o_clamp[0][1]) in vec2 vTexClampT0;
+@if(o_clamp[1][0]) in vec2 vTexClampS1;
+@if(o_clamp[0][1]) in vec2 vTexClampT1;
 
-@if(x_fog) in vec4 vFog;
-@if(x_grayscale) in vec4 vGrayscale;
+@if(o_fog) in vec4 vFog;
+@if(o_grayscale) in vec4 vGrayscale;
 
-@for(i in 0..x_inputs) 
-    in vec@{if x_alpha then 4 else 3} vInput@{i};
+@for(i in 0..o_inputs) 
+    in vec@{if o_alpha then 4 else 3} vInput@{i};
 @end
 
-@if(x_masks[0]) uniform sampler2D uTexMask0;
-@if(x_masks[1]) uniform sampler2D uTexMask1;
+@if(o_masks[0]) uniform sampler2D uTexMask0;
+@if(o_masks[1]) uniform sampler2D uTexMask1;
 
-@if(x_blend[0]) uniform sampler2D uTexBlend0;
-@if(x_blend[1]) uniform sampler2D uTexBlend1;
+@if(o_blend[0]) uniform sampler2D uTexBlend0;
+@if(o_blend[1]) uniform sampler2D uTexBlend1;
 
 uniform int uFrame;
 uniform float uNoiseScale;
 
-#define TEX_OFFSET(off) tex2D(tex, texCoord - off / texSize)
+#define TEo_OFFSET(off) tex2D(tex, texCoord - off / texSize)
 #define WRAP(x, low, high) mod((x)-(low), (high)-(low)) + (low)
 
 float random(in vec3 value) {
@@ -46,13 +46,13 @@ vec4 fromLinear(vec4 linearRGB){
     return vec4(mix(higher, lower, cutoff), linearRGB.a);
 }
 
-@if(x_three_point_filter)
+@if(o_three_point_filter)
 vec4 filter3point(in sampler2D tex, in vec2 texCoord, in vec2 texSize) {
     vec2 offset = fract(texCoord*texSize - vec2(0.5));
     offset -= step(1.0, offset.x + offset.y);
-    vec4 c0 = TEX_OFFSET(offset);
-    vec4 c1 = TEX_OFFSET(vec2(offset.x - sign(offset.x), offset.y));
-    vec4 c2 = TEX_OFFSET(vec2(offset.x, offset.y - sign(offset.y)));
+    vec4 c0 = TEo_OFFSET(offset);
+    vec4 c1 = TEo_OFFSET(vec2(offset.x - sign(offset.x), offset.y));
+    vec4 c2 = TEo_OFFSET(vec2(offset.x, offset.y - sign(offset.y)));
     return c0 + abs(offset.x)*(c1-c0) + abs(offset.y)*(c2-c0);
 }
 
@@ -67,9 +67,9 @@ vec4 hookTexture2D(in sampler2D tex, in vec2 uv, in vec2 texSize) {
 
 void main() {
     @for(i in 0..2)
-        @if(x_textures[i])
-            @bool s = x_clamp[@{i}][0];
-            @bool t = x_clamp[@{i}][1];
+        @if(o_textures[i])
+            @{s = o_clamp[i][0]};
+            @{t = o_clamp[i][1]};
 
             vec2 texSize@{i} = @calcTexSize(uTex@{i}, 0);
 
@@ -87,10 +87,10 @@ void main() {
 
             vec4 texVal@{i} = hookTexture2D(uTex@{i}, vTexCoordAdj@{i}, texSize@{i});
 
-            @if(x_masks[i])
+            @if(o_masks[i])
                 vec2 maskSize@{i} = @calcTexSize(uTexMask@{i}, 0);
                 vec4 maskVal@{i} = hookTexture2D(uTexMask@{i}, vTexCoordAdj@{i}, maskSize@{i});
-                @if(x_blend[i])
+                @if(o_blend[i])
                     vec4 blendVal@{i} = hookTexture2D(uTexBlend@{i}, vTexCoordAdj@{i}, texSize@{i});
                 @else
                     vec4 blendVal@{i} = vec4(0, 0, 0, 0);
@@ -101,21 +101,21 @@ void main() {
     @end
 
     vec4 texel;
-    @if(!x_alpha)
+    @if(!o_alpha)
         texel.a = 1;
     @end
 
-    @for(c in 0..(if x_2cyc then 2 else 1))
+    @for(c in 0..(if o_2cyc then 2 else 1))
         @if(c == 1)
-            @if(x_alpha)
-                @if(x_c[c][1][2] == SHADER_COMBINED)
+            @if(o_alpha)
+                @if(o_c[c][1][2] == SHADER_COMBINED)
                     texel.a = WRAP(texel.a, -1.01, 1.01);
                 @else
                     texel.a = WRAP(texel.a, -0.51, 1.51);
                 @end
             @end
 
-            @if(x_c[c][0][2] == SHADER_COMBINED)
+            @if(o_c[c][0][2] == SHADER_COMBINED)
                 texel.rgb = WRAP(texel.rgb, -1.01, 1.01);
             @else
                 texel.rgb = WRAP(texel.rgb, -0.51, 1.51);

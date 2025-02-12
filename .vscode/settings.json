@@ -89,6 +89,6 @@
     "cinttypes": "cpp"
   },
   "cmake.debugConfig": {
-    "args": ["../examples/script.v0.prism"]
+    "args": ["../examples/script.prism"]
   }
 }

@@ -65,7 +65,9 @@ namespace prism {
         std::variant<GeneratedRange, MTDArray<bool>, MTDArray<int>, MTDArray<float>> iterator; 
     };
 
-    typedef std::variant<bool, int, float, MTDArray<bool>, MTDArray<int>, MTDArray<float>, GeneratedRange, std::string, ForContext> ContextTypes;
+    struct Void {};
+
+    typedef std::variant<Void, bool, int, float, MTDArray<bool>, MTDArray<int>, MTDArray<float>, GeneratedRange, std::string, ForContext> ContextTypes;
     typedef std::unordered_map<std::string, ContextTypes> ContextItems;
 
     enum class ScopeType {

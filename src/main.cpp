@@ -25,7 +25,9 @@ int main(int argc, char** argv) {
     prism::ContextItems vars = {
         { "o_textures", M_ARRAY(o_textures, int, 2) },
         { "o_clamp", M_ARRAY(o_clamp, int, 2, 2) },
-        { "o_float", M_ARRAY(o_float, float, 6) }
+        { "o_float", M_ARRAY(o_float, float, 6) },
+        { "o_fog", true },
+        { "o_grayscale", true },
     };
 
     prism::Processor processor;
