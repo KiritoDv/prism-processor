@@ -3,6 +3,14 @@
 #include <spdlog/spdlog.h>
 #include <fstream>
 
+prism::ContextTypes add_text(std::vector<prism::ContextTypes> args) {
+    std::string items = "";
+    for (int i = 0; i<args.size(); i++) {
+        items += "add";
+    }
+    return prism::ContextTypes{items};
+}
+
 int main(int argc, char** argv) {
     if (argc < 2) {
         SPDLOG_ERROR("Usage: {} <file>", argv[0]);
@@ -26,19 +34,20 @@ int main(int argc, char** argv) {
     int o_c[2][2][3] = { { { 1, 1, 1 }, { 1, 1, 1 } }, { { 1, 1, 1 }, { 1, 1, 1 } } };
 
     prism::ContextItems vars = {
-        { "o_textures", M_ARRAY(o_textures, int, 2) },
-        { "o_clamp", M_ARRAY(o_clamp, int, 2, 2) },
-        { "o_float", M_ARRAY(o_float, float, 6) },
-        { "o_fog", true },
-        { "o_grayscale", true },
-        { "o_inputs", 4 },
-        { "o_alpha", true },
-        { "o_masks", M_ARRAY(o_masks, int, 2) },
-        { "o_blend", M_ARRAY(o_blend, int, 2) },
-        { "o_three_point_filter", true },
-        { "o_2cyc", true },
-        { "o_c", M_ARRAY(o_c, int, 3, 2, 2) },
-        { "SHADER_COMBINED", 1 },
+        VAR( "o_textures", M_ARRAY(o_textures, int, 2) ),
+        VAR("o_clamp", M_ARRAY(o_clamp, int, 2, 2)),
+        VAR("o_float", M_ARRAY(o_float, float, 6)),
+        VAR("o_fog", true) ,
+        VAR("o_grayscale", true),
+        VAR("o_inputs", 4),
+        VAR("o_alpha", true),
+        VAR("o_masks", M_ARRAY(o_masks, int, 2)),
+        VAR("o_blend", M_ARRAY(o_blend, int, 2)),
+        VAR("o_three_point_filter", true),
+        VAR("o_2cyc", true),
+        VAR("o_c", M_ARRAY(o_c, int, 3, 2, 2)),
+        VAR("SHADER_COMBINED", 1),
+        VAR("add_text", add_text),
     };
 
     prism::Processor processor;

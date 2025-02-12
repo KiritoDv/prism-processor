@@ -13,6 +13,7 @@
 
 #define is_type(var, type) std::holds_alternative<type>((var))
 #define M_ARRAY(arr, type, ...) prism::MTDArray<type> { (uintptr_t) &arr, std::vector<size_t>{__VA_ARGS__} }
+#define VAR(name, type) {name, prism::ContextTypes{type}}
 
 namespace prism {
 
@@ -67,7 +68,9 @@ namespace prism {
 
     struct Void {};
 
-    typedef std::variant<Void, bool, int, float, MTDArray<bool>, MTDArray<int>, MTDArray<float>, GeneratedRange, std::string, ForContext> ContextTypes;
+    struct ContextTypes {
+        std::variant<Void, bool, int, float, MTDArray<bool>, MTDArray<int>, MTDArray<float>, GeneratedRange, std::string, ForContext, ContextTypes (*)(std::vector<ContextTypes>)> value;
+    };
     typedef std::unordered_map<std::string, ContextTypes> ContextItems;
 
     enum class ScopeType {
@@ -129,7 +132,7 @@ namespace prism {
             auto var = context.name;
             auto array = std::get<prism::MTDArray<T>>(context.iterator);
             for (size_t i = 0; i < array.dimensions[0]; i++) {
-                m_items[var] = array.at(i);
+                m_items[var] = prism::ContextTypes{array.at(i)};
                 evaluate_node(node.children);
             }
             m_items.erase(var);
