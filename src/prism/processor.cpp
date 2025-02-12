@@ -226,10 +226,7 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         auto equalNode = std::get<prism::ast::AndNode>(node->node);
         auto left = evaluate(equalNode.left);
         auto right = evaluate(equalNode.right);
-        if(is_type(left, float) || is_type(right, float)) {
-            throw SyntaxError("Invalid EQUAL operation, float are not supported");
-        }
-
+        
         if(is_type(left, bool) && is_type(right, bool)) {
             return std::get<bool>(left) == std::get<bool>(right);
         }
@@ -244,6 +241,10 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
 
         if(is_type(left, bool) && is_type(right, int)) {
             return (std::get<bool>(left) ? 1 : 0) == std::get<int>(right);
+        }
+
+        if(is_type(left, float) && is_type(right, float)) {
+            return std::get<float>(left) == std::get<float>(right);
         }
 
         throw SyntaxError("Invalid EQUAL operation");
