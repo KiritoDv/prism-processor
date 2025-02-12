@@ -534,6 +534,9 @@ prism::Node prism::Processor::parse(std::string input) {
                         children = get_children(current);
                     }
                 } else if (expr == "end") {
+                    if (current == root) {
+                        throw prism::SyntaxError("Unmatched end");
+                    }
                     current = current->parent;
                     children = get_children(current);
                     previous = c;

@@ -94,6 +94,7 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
                 break;
             case '.':
                 if (peek() == '.') { tokens.emplace_back(TokenType::RANGE, ".."); pos += 2; }
+                else { throw prism::SyntaxError("Unexpected character " + std::string(1, current)); }
                 break;
             case ';': pos++; break;
             default:

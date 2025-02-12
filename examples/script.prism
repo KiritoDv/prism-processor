@@ -135,4 +135,44 @@ void main() {
                            o_alpha, c == 0)};
         @end
     @end
+    texel = WRAP(texel, -0.51, 1.51);
+    texel = clamp(texel, 0.0, 1.0);
+    // TODO discard if alpha is 0?
+    @if(o_fog)
+        @if(o_alpha)
+            texel = vec4(mix(texel.rgb, vFog.rgb, vFog.a), texel.a);
+        @else
+            texel = mix(texel, vFog.rgb, vFog.a);
+        @end
+    @end
+
+    @if(o_texture_edge && o_alpha)
+        if (texel.a > 0.19) texel.a = 1.0; else discard;
+    @end
+
+    @if(o_alpha && o_noise)
+        texel.a *= floor(clamp(random(vec3(floor(gl_FragCoord.xy * noise_scale), float(frame_count))) + texel.a, 0.0, 1.0));
+    @end
+
+    @if(o_grayscale)
+        float intensity = (texel.r + texel.g + texel.b) / 3.0;
+        vec3 new_texel = vGrayscaleColor.rgb * intensity;
+        texel.rgb = mix(texel.rgb, new_texel, vGrayscaleColor.a);
+    @end
+
+    @if(o_alpha)
+        @if(o_alpha_threshold)
+            if (texel.a < 8.0 / 256.0) discard;
+        @end
+        @if(o_invisible)
+            texel.a = 0.0;
+        @end
+        gl_FragColor = texel;
+    @else
+        gl_FragColor = vec4(texel, 1.0);
+    @end
+
+    @if(srgb_mode)
+        gl_FragColor = fromLinear(gl_FragColor);
+    @end
 }
