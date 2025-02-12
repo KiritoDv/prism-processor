@@ -75,6 +75,8 @@ uintptr_t invoke(uintptr_t (*native_code)(), uintptr_t* args, size_t length) {
                         args[12], args[13], args[14], args[15], args[16],
                         args[17], args[18], args[19]);
     }
+
+    return (uintptr_t) NULL;
 }
 
 #if defined(__clang__)

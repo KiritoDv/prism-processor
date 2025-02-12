@@ -9,6 +9,7 @@ set(CMAKE_C_STANDARD 11)
 # Set build options
 option(USE_STANDALONE "Build as a standalone executable" ON)
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+option(DEBUG_PARSE "Enable debug node" OFF)
 
 ################################################################################
 # Set target arch type if empty. Visual studio solution generator provides it.
@@ -47,6 +48,10 @@ if (USE_STANDALONE)
 else()
     add_library(${PROJECT_NAME} STATIC ${SRC_DIR})
 	set(LINK_TYPE "MT")
+endif()
+
+if (DEBUG_PARSE)
+    add_definitions(-DDEBUG_PARSE)
 endif()
 
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")

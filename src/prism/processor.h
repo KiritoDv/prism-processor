@@ -114,7 +114,7 @@ namespace prism {
 
     class Node {
     public:
-        Node(NodeType node, std::shared_ptr<Node> parent) : node(std::move(node)), parent(parent) {}
+        Node(NodeType node, std::shared_ptr<Node> parent) : node(std::move(node)), parent(std::move(parent)) {}
         NodeType node;
         std::shared_ptr<Node> parent;
         int depth = 0;
@@ -127,7 +127,7 @@ namespace prism {
 
     class Processor {
     public:
-        void populate(ContextItems items);
+        void populate(const ContextItems& items);
         void load(const std::string& input);
         prism::Node parse(std::string input);
         ContextTypes evaluate(const std::shared_ptr<prism::ast::ASTNode>& node);
@@ -135,7 +135,6 @@ namespace prism {
         std::string process();
         ContextItems getTypes() { return this->m_items; }
 
-        // TODO, Handle multiple dimensions
         template <typename T>
         void array_iterate(prism::ForNode& node, prism::ForContext& context) {
             auto var = context.name;
