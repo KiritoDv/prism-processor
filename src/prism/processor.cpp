@@ -145,44 +145,22 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         throw SyntaxError("Invalid array access");
     } else if (is_type(node->node, prism::ast::InNode)) {
         auto inNode = std::get<prism::ast::InNode>(node->node);
-        if (is_type(inNode.left->node, prism::ast::VariableNode)) {
-            auto var = std::get<prism::ast::VariableNode>(inNode.left->node);
-            auto right = evaluate(inNode.right);
-            if(!this->m_items.contains(var.name)){
-                return Enumerate{var.name, std::get<GeneratedRange>(right)};
-            }
+        auto var = std::get<prism::ast::VariableNode>(inNode.left->node);
+        auto result = evaluate(inNode.right);
+        if(is_type(result, int) || is_type(result, float) || is_type(result, bool)) {
+            throw SyntaxError("Invalid IN operation");
         }
-        auto left = evaluate(inNode.left);
-        auto right = evaluate(inNode.right);
-        if(is_type(left, prism::MTDArray<int>) && is_type(right, int)){
-            auto leftArray = std::get<prism::MTDArray<int>>(left);
-            auto rightValue = std::get<int>(right);
-            for(auto i = 0; i < leftArray.dimensions[0]; i++){
-                if(leftArray.at(i) == rightValue){
-                    return true;
-                }
-            }
-            return false;
+        if(is_type(result, MTDArray<int>)) {
+            return ForContext{ var.name, std::get<MTDArray<int>>(result) };
         }
-        if(is_type(left, prism::MTDArray<bool>) && is_type(right, bool)){
-            auto leftArray = std::get<prism::MTDArray<bool>>(left);
-            auto rightValue = std::get<bool>(right);
-            for(auto i = 0; i < leftArray.dimensions[0]; i++){
-                if(leftArray.at(i) == rightValue){
-                    return true;
-                }
-            }
-            return false;
+        if(is_type(result, MTDArray<float>)) {
+            return ForContext{ var.name, std::get<MTDArray<float>>(result) };
         }
-        if(is_type(left, prism::MTDArray<float>) && is_type(right, float)){
-            auto leftArray = std::get<prism::MTDArray<float>>(left);
-            auto rightValue = std::get<float>(right);
-            for(auto i = 0; i < leftArray.dimensions[0]; i++){
-                if(leftArray.at(i) == rightValue){
-                    return true;
-                }
-            }
-            return false;
+        if(is_type(result, MTDArray<bool>)) {
+            return ForContext{ var.name, std::get<MTDArray<bool>>(result) };
+        }
+        if(is_type(result, GeneratedRange)) {
+            return ForContext{ var.name, std::get<GeneratedRange>(result) };
         }
         throw SyntaxError("Invalid IN operation");
     } else if (is_type(node->node, prism::ast::NotNode)) {
@@ -198,7 +176,7 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
     } else if (is_type(node->node, prism::ast::AssignNode)) {
         auto assignNode = std::get<prism::ast::AssignNode>(node->node);
         auto value = evaluate(assignNode.value);
-        if(is_type(value, GeneratedRange) || is_type(value, std::string) || is_type(value, Enumerate)){
+        if(is_type(value, GeneratedRange) || is_type(value, std::string) || is_type(value, ForContext)){
             throw SyntaxError("Invalid assign operation");
         }
         this->m_items[assignNode.name.name] = value;
@@ -581,16 +559,22 @@ void prism::Processor::evaluate_node(std::shared_ptr<std::vector<std::shared_ptr
             
         } else if (is_type(child->node, prism::ForNode)) {
             auto forNode = std::get<prism::ForNode>(child->node);
-            auto condition = evaluate(forNode.condition);
-            if(is_type(condition, prism::Enumerate)){
-                auto enumerate = std::get<prism::Enumerate>(condition);
-                auto range = enumerate.range;
-                auto var = enumerate.name;
+            auto context = std::get<prism::ForContext>(evaluate(forNode.condition));
+
+            if(is_type(context.iterator, GeneratedRange)){
+                auto range = std::get<GeneratedRange>(context.iterator);
+                auto var = context.name;
                 for(auto i = range.start; i < range.end; i++){
                     m_items[var] = ContextTypes{(int) i};
                     evaluate_node(forNode.children);
                 }
                 m_items.erase(var);
+            } else if(is_type(context.iterator, MTDArray<bool>)) {
+                iterateOnArray<bool>(forNode, context);
+            } else if(is_type(context.iterator, MTDArray<int>)) {
+                iterateOnArray<int>(forNode, context);
+            } else if(is_type(context.iterator, MTDArray<float>)) {
+                iterateOnArray<float>(forNode, context);
             }
         }
     }

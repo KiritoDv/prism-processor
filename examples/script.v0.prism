@@ -24,8 +24,7 @@ uniform sampler2D uTex1;
     @end
 @end
 
-in vec2 vTexClampS0;
-in vec2 vTexClampT0;
-in vec2 vTexClampS1;
-in vec2 vTexClampT1;
-in vec2 vTexClampS0;
+@for(i in o_textures)
+    in vec2 xTexClampS@{i};
+    in vec2 xTexClampT@{i};
+@end

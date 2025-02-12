@@ -49,16 +49,23 @@ namespace prism {
             }
             return ((T*) ptr)[x * dimensions[1] * dimensions[2] * dimensions[3] + y * dimensions[2] * dimensions[3] + z * dimensions[3] + w];
         }
+
+        T* get(){
+            return (T*) ptr;
+        }
     };
 
     struct GeneratedRange {
         size_t start;
         size_t end;
     };
+    
+    struct ForContext { 
+        std::string name; 
+        std::variant<GeneratedRange, MTDArray<bool>, MTDArray<int>, MTDArray<float>> iterator; 
+    };
 
-    struct Enumerate { std::string name; GeneratedRange range; };
-
-    typedef std::variant<bool, int, float, MTDArray<bool>, MTDArray<int>, MTDArray<float>, GeneratedRange, std::string, Enumerate> ContextTypes;
+    typedef std::variant<bool, int, float, MTDArray<bool>, MTDArray<int>, MTDArray<float>, GeneratedRange, std::string, ForContext> ContextTypes;
     typedef std::unordered_map<std::string, ContextTypes> ContextItems;
 
     enum class ScopeType {
@@ -113,6 +120,19 @@ namespace prism {
         void evaluate_node(std::shared_ptr<std::vector<std::shared_ptr<prism::Node>>>& children);
         std::string process();
         ContextItems getTypes() { return this->m_items; }
+
+        // TODO, Handle multiple dimensions
+        template <typename T>
+        void iterateOnArray(prism::ForNode& node, prism::ForContext& context) {
+            auto var = context.name;
+            auto array = std::get<prism::MTDArray<T>>(context.iterator);
+            for (size_t i = 0; i < array.dimensions[0]; i++) {
+                m_items[var] = array.at(i);
+                evaluate_node(node.children);
+            }
+            m_items.erase(var);
+        }
+
     private:
         ContextItems m_items;
         RuntimeContext m_context;
