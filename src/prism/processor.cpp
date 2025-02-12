@@ -521,7 +521,33 @@ prism::Node prism::Processor::parse(std::string input) {
     auto children = std::get<prism::RootNode>(root->node).children;
     auto c = input.begin();
     auto previous = c;
+    bool canBeOnTheSameLine = false;
+    bool isOnTheSameLine = false;
+    int ifCount = 0;
     while (c != input.end()) {
+        if (canBeOnTheSameLine) {
+            if (*c == ';') {
+                isOnTheSameLine = true;
+                c++;
+                continue;
+            }
+            if (isOnTheSameLine) {
+                if (*c == '\n') {
+                    isOnTheSameLine = false;
+                    canBeOnTheSameLine = false;
+                    children->push_back(
+                        std::make_shared<prism::Node>(prism::TextNode{ std::string(previous, c + 1) }, current));
+                    previous = c;
+                    current = current->parent;
+                    children = get_children(current);
+                }
+            }
+        }
+        if (*c == '\n' && canBeOnTheSameLine && !isOnTheSameLine) {
+            isOnTheSameLine = false;
+            canBeOnTheSameLine = false;
+            continue;
+        }
         if (*c == '@') {
             children->push_back(std::make_shared<prism::Node>(prism::TextNode{ std::string(previous, c) }, current));
             c++;
@@ -533,6 +559,7 @@ prism::Node prism::Processor::parse(std::string input) {
                 auto expr = get_keyword(c, input.end());
                 previous = c;
                 if (expr == "if") {
+                    ifCount++;
                     auto ast = parse_parenthesis(c, input.end());
                     previous = c;
 
@@ -541,17 +568,9 @@ prism::Node prism::Processor::parse(std::string input) {
                     current = children->back();
                     children = std::get<prism::IfNode>(current->node).children;
 
-                    bool sameLine = is_on_the_same_line(c, input.end());
-                    if (sameLine) {
-                        while (*c != '\n') {
-                            c++;
-                        }
-                        children->push_back(
-                            std::make_shared<prism::Node>(prism::TextNode{ std::string(previous, c + 1) }, current));
-                        previous = c;
-                        current = current->parent;
-                        children = get_children(current);
-                    }
+                    canBeOnTheSameLine = true;
+                    isOnTheSameLine = false;
+                    continue;
                 } else if (expr == "else") {
                     if (!is_type(current->node, prism::IfNode) && !is_type(current->node, prism::ElseIfNode)) {
                         throw prism::SyntaxError("Else without if");
@@ -574,17 +593,9 @@ prism::Node prism::Processor::parse(std::string input) {
                     current = children->back();
                     children = std::get<prism::ElseNode>(current->node).children;
 
-                    bool sameLine = is_on_the_same_line(c, input.end());
-                    if (sameLine) {
-                        while (*c != '\n') {
-                            c++;
-                        }
-                        children->push_back(
-                            std::make_shared<prism::Node>(prism::TextNode{ std::string(previous, c + 1) }, current));
-                        previous = c;
-                        current = current->parent;
-                        children = get_children(current);
-                    }
+                    canBeOnTheSameLine = true;
+                    isOnTheSameLine = false;
+                    continue;
                 } else if (expr == "elseif") {
                     if (!is_type(current->node, prism::IfNode) && !is_type(current->node, prism::ElseIfNode)) {
                         throw prism::SyntaxError("Else without if");
@@ -612,17 +623,9 @@ prism::Node prism::Processor::parse(std::string input) {
                     current = children->back();
                     children = std::get<prism::ElseIfNode>(current->node).children;
 
-                    bool sameLine = is_on_the_same_line(c, input.end());
-                    if (sameLine) {
-                        while (*c != '\n') {
-                            c++;
-                        }
-                        children->push_back(
-                            std::make_shared<prism::Node>(prism::TextNode{ std::string(previous, c + 1) }, current));
-                        previous = c;
-                        current = current->parent;
-                        children = get_children(current);
-                    }
+                    canBeOnTheSameLine = true;
+                    isOnTheSameLine = false;
+                    continue;
                 } else if (expr == "for") {
                     auto ast = parse_parenthesis(c, input.end());
                     previous = c;
@@ -632,17 +635,9 @@ prism::Node prism::Processor::parse(std::string input) {
                     current = children->back();
                     children = std::get<prism::ForNode>(current->node).children;
 
-                    bool sameLine = is_on_the_same_line(c, input.end());
-                    if (sameLine) {
-                        while (*c != '\n') {
-                            c++;
-                        }
-                        children->push_back(
-                            std::make_shared<prism::Node>(prism::TextNode{ std::string(previous, c + 1) }, current));
-                        previous = c;
-                        current = current->parent;
-                        children = get_children(current);
-                    }
+                    canBeOnTheSameLine = true;
+                    isOnTheSameLine = false;
+                    continue;
                 } else if (expr == "end") {
                     if (current == root) {
                         throw prism::SyntaxError("Unmatched end");
