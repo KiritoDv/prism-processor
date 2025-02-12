@@ -416,11 +416,11 @@ prism::Node prism::Processor::parse(std::string input) {
                     children->push_back(std::make_shared<prism::Node>(prism::TextNode{std::get<std::string>(m_items[expr].value)}, current));
                 } else if (expr == "if") {
                     auto ast = parse_parentesis(c, input.end());
-                    children->push_back(std::make_shared<prism::Node>(prism::IfNode{ast, std::make_shared<std::vector<std::shared_ptr<prism::Node>>>()}, current));
+                    previous = c;
 
+                    children->push_back(std::make_shared<prism::Node>(prism::IfNode{ast, std::make_shared<std::vector<std::shared_ptr<prism::Node>>>()}, current));
                     current = children->back();
                     children = std::get<prism::IfNode>(current->node).children;
-                    previous = c;
 
                     bool sameLine = is_on_the_same_line(c, input.end());
                     if(sameLine){
@@ -433,18 +433,26 @@ prism::Node prism::Processor::parse(std::string input) {
                         children = get_children(current);
                     }
                 } else if (expr == "else") {
-                    if (!is_type(current->node, prism::IfNode)) {
+                    if (!is_type(current->node, prism::IfNode) && !is_type(current->node, prism::ElseIfNode)) {
                         throw prism::SyntaxError("Else without if");
                     }
-                    auto ifNode = std::get<prism::IfNode>(current->node);
-                    ifNode.elseBody = std::make_shared<prism::ElseNode>();
+                    auto ifNode = current;
+
                     current = current->parent;
                     children = get_children(current);
-                    previous = c;
-                    children->push_back(std::make_shared<prism::Node>(prism::ElseNode{std::make_shared<std::vector<std::shared_ptr<prism::Node>>>()}, current));
+
+                    auto newNode = std::make_shared<prism::Node>(prism::ElseNode{std::make_shared<std::vector<std::shared_ptr<prism::Node>>>()}, current);
+                    if (is_type(ifNode->node, prism::ElseIfNode)) {
+                        ifNode = std::get<prism::ElseIfNode>(ifNode->node).parentIf;
+                    }
+                    auto ifNodePtr = std::get<prism::IfNode>(ifNode->node);
+                    ifNodePtr.elseBody = newNode;
+                    ifNode->node = ifNodePtr;
+
+                    children->push_back(newNode);
                     current = children->back();
                     children = std::get<prism::ElseNode>(current->node).children;
-                    previous = c;
+
                     bool sameLine = is_on_the_same_line(c, input.end());
                     if(sameLine){
                         while (*c != '\n') {
@@ -456,20 +464,30 @@ prism::Node prism::Processor::parse(std::string input) {
                         children = get_children(current);
                     }
                 } else if (expr == "elseif") {
-                    if (!is_type(current->parent->node, prism::IfNode)) {
+                    if (!is_type(current->node, prism::IfNode) && !is_type(current->node, prism::ElseIfNode)) {
                         throw prism::SyntaxError("Else without if");
                     }
-                    auto ifNode = std::get<prism::IfNode>(current->parent->node);
+                    auto ifNode = current;
+
+                    if (is_type(ifNode->node, prism::ElseIfNode)) {
+                        ifNode = std::get<prism::ElseIfNode>(ifNode->node).parentIf;
+                    }
+
                     current = current->parent;
                     children = get_children(current);
-                    previous = c;
+
                     auto ast = parse_parentesis(c, input.end());
-                    auto newNode = std::make_shared<prism::Node>(prism::ElseIfNode{ast, std::make_shared<std::vector<std::shared_ptr<prism::Node>>>()}, current);
-                    ifNode.elseIfs.push_back(std::make_shared<prism::ElseIfNode>(std::get<prism::ElseIfNode>(newNode->node)));
+                    previous = c;
+
+                    auto newNode = std::make_shared<prism::Node>(prism::ElseIfNode{ast, std::make_shared<std::vector<std::shared_ptr<prism::Node>>>(), ifNode}, current);
+                    auto ifNodePtr = std::get<prism::IfNode>(ifNode->node);
+                    ifNodePtr.elseIfs.push_back(newNode);
+                    ifNode->node = ifNodePtr;
+
                     children->push_back(newNode);
                     current = children->back();
                     children = std::get<prism::ElseIfNode>(current->node).children;
-                    previous = c;
+
                     bool sameLine = is_on_the_same_line(c, input.end());
                     if(sameLine){
                         while (*c != '\n') {
@@ -482,10 +500,12 @@ prism::Node prism::Processor::parse(std::string input) {
                     }
                 } else if (expr == "for") {
                     auto ast = parse_parentesis(c, input.end());
+                    previous = c;
+
                     children->push_back(std::make_shared<prism::Node>(prism::ForNode{ast, std::make_shared<std::vector<std::shared_ptr<prism::Node>>>()}, current));
                     current = children->back();
                     children = std::get<prism::ForNode>(current->node).children;
-                    previous = c;
+
                     bool sameLine = is_on_the_same_line(c, input.end());
                     if(sameLine){
                         while (*c != '\n') {
@@ -545,16 +565,18 @@ void prism::Processor::evaluate_node(std::shared_ptr<std::vector<std::shared_ptr
             } else if(is_type(condition, int) && std::get<int>(condition) == 1){
                 evaluate_node(ifNode.children);
             } else if (!ifNode.elseIfs.empty()) {
-                for (const auto& elseIf : ifNode.elseIfs) {
-                    auto condition = evaluate(elseIf->condition).value;
+                for (const auto& node : ifNode.elseIfs) {
+                    auto elseIf = std::get<prism::ElseIfNode>(node->node);
+                    auto condition = evaluate(elseIf.condition).value;
                     if(is_type(condition, bool) && std::get<bool>(condition)) {
-                        evaluate_node(elseIf->children);
+                        evaluate_node(elseIf.children);
                     } else if(is_type(condition, int) && std::get<int>(condition) == 1){
-                        evaluate_node(elseIf->children);
+                        evaluate_node(elseIf.children);
                     }
                 }
             } else if (ifNode.elseBody) {
-                evaluate_node(ifNode.elseBody->children);
+                auto elseNode = std::get<prism::ElseNode>(ifNode.elseBody->node);
+                evaluate_node(elseNode.children);
             }
             
         } else if (is_type(child->node, prism::ForNode)) {

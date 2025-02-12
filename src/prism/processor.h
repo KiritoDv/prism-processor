@@ -96,8 +96,8 @@ namespace prism {
     struct TextNode { std::string text; };
     struct VariableNode { std::shared_ptr<ast::ASTNode> name; };
     struct ElseNode { std::shared_ptr<std::vector<std::shared_ptr<Node>>> children; };
-    struct ElseIfNode { std::shared_ptr<ast::ASTNode> condition; std::shared_ptr<std::vector<std::shared_ptr<Node>>> children; };
-    struct IfNode { std::shared_ptr<ast::ASTNode> condition; std::shared_ptr<std::vector<std::shared_ptr<Node>>> children; std::shared_ptr<ElseNode> elseBody; std::vector<std::shared_ptr<ElseIfNode>> elseIfs; };
+    struct ElseIfNode { std::shared_ptr<ast::ASTNode> condition; std::shared_ptr<std::vector<std::shared_ptr<Node>>> children; std::shared_ptr<Node> parentIf; };
+    struct IfNode { std::shared_ptr<ast::ASTNode> condition; std::shared_ptr<std::vector<std::shared_ptr<Node>>> children; std::shared_ptr<Node> elseBody; std::vector<std::shared_ptr<Node>> elseIfs; };
     struct ForNode { std::shared_ptr<ast::ASTNode> condition; std::shared_ptr<std::vector<std::shared_ptr<Node>>> children;};
     struct EndNode {};
 

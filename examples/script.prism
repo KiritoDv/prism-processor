@@ -78,7 +78,7 @@ void main() {
             @else
                 @if(s && t)
                     vec2 vTexCoordAdj@{i} = clamp(vTexCoord@{i}, 0.5 / texSize@{i}, vec2(vTexClampS@{i}, vTexClampT@{i}));
-                @elif(s)
+                @elseif(s)
                     vec2 vTexCoordAdj@{i} = vec2(clamp(vTexCoord@{i}.s, 0.5 / texSize@{i}.s, vTexClampS@{i}), vTexCoord@{i}.t);
                 @else
                     vec2 vTexCoordAdj@{i} = vec2(vTexCoord@{i}.s, clamp(vTexCoord@{i}.t, 0.5 / texSize@{i}.t, vTexClampT@{i}));
@@ -121,5 +121,7 @@ void main() {
                 texel.rgb = WRAP(texel.rgb, -0.51, 1.51);
             @end
         @end
+
+        
     @end
 }
