@@ -570,11 +570,11 @@ void prism::Processor::evaluate_node(std::shared_ptr<std::vector<std::shared_ptr
                 }
                 m_items.erase(var);
             } else if(is_type(context.iterator, MTDArray<bool>)) {
-                iterateOnArray<bool>(forNode, context);
+                array_iterate<bool>(forNode, context);
             } else if(is_type(context.iterator, MTDArray<int>)) {
-                iterateOnArray<int>(forNode, context);
+                array_iterate<int>(forNode, context);
             } else if(is_type(context.iterator, MTDArray<float>)) {
-                iterateOnArray<float>(forNode, context);
+                array_iterate<float>(forNode, context);
             }
         }
     }

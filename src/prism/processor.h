@@ -123,7 +123,7 @@ namespace prism {
 
         // TODO, Handle multiple dimensions
         template <typename T>
-        void iterateOnArray(prism::ForNode& node, prism::ForContext& context) {
+        void array_iterate(prism::ForNode& node, prism::ForContext& context) {
             auto var = context.name;
             auto array = std::get<prism::MTDArray<T>>(context.iterator);
             for (size_t i = 0; i < array.dimensions[0]; i++) {
