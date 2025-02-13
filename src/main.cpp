@@ -176,13 +176,51 @@ int main(int argc, char** argv) {
     int o_textures[2] = { 1, 1 };
     int o_clamp[2][2] = { { 1, 1 }, { 1, 1 } };
     float o_float[] = { 1.1f, 2.2f, 3.3f, 4.4f, 5.5f, 6.6f };
-    int o_masks[2] = { 1, 1 };
-    int o_blend[2] = { 1, 1 };
-    int o_c[2][2][4] = { { { 1, 1, 1, 1 }, { 1, 1, 1, 1 } }, { { 1, 1, 1, 1 }, { 1, 1, 1, 1 } } };
+    int o_masks[2] = { 1, 2 };
+    int o_blend[2] = { 1, 2 };
+    int o_c[2][2][4] = { { { 1, 2, 3, 4 }, { 5, 6, 7, 8 } }, { { 9, 10, 11, 12 }, { 13, 14, 15, 16 } } };
     int o_color_alpha_same[3] = { 0, 0, 0 };
-    int o_do_single[2][2] = { { 1, 1 }, { 1, 1 } };
-    int o_do_multiply[2][2] = { { 1, 1 }, { 1, 1 } };
-    int o_do_mix[2][2] = { { 1, 1 }, { 1, 1 } };
+    int o_do_single[2][2] = { { 1, 2 }, { 3, 4 } };
+    int o_do_multiply[2][2] = { { 1, 2 }, { 3, 4 } };
+    int o_do_mix[2][2] = { { 1, 2 }, { 3, 4 } };
+
+    auto test = M_ARRAY(o_c, int, 2, 2, 4);
+    for(int i = 0; i < 2; i++) {
+        for(int j = 0; j < 2; j++) {
+            for(int k = 0; k < 4; k++) {
+                assert(test.at(i, j, k) == o_c[i][j][k] || "Array access failed");
+            }
+        }
+    }
+
+    for(int i = 0; i < 2; i++){
+        for(int j = 0; j < 2; j++){
+            for(int k = 0; k < 4; k++){
+                assert(test.get(i, j).at(k) == o_c[i][j][k] || "Array access failed");
+            }
+        }
+        assert(test.get(i).at(0, 0) == o_c[i][0][0] || "Array access failed");
+    }
+
+    uintptr_t ptr = (uintptr_t)&o_c;
+    uintptr_t ptr2 = (uintptr_t)test.ptr;
+    for (int i = 0; i < 2; i++) {
+        ptr = (uintptr_t)&o_c[i];
+        ptr2 = (uintptr_t)test.get(i).ptr;
+        assert(ptr == ptr2);
+        auto c2 = test.get(i);
+        for (int j = 0; j < 2; j++) {
+            ptr = (uintptr_t)&o_c[i][j];
+            ptr2 = (uintptr_t)c2.get(j).ptr;
+            assert(ptr == ptr2);
+            auto c3 = c2.get(j);
+            for (int k = 0; k < 4; k++) {
+                ptr = (uintptr_t)&o_c[i][j][k];
+                ptr2 = (uintptr_t)&c3.at(k);
+                assert(ptr == ptr2);
+            }
+        }
+    }
 
     prism::ContextItems vars = {
         { "GLSL_VERSION", "#version 410 core" },
@@ -207,7 +245,7 @@ int main(int argc, char** argv) {
         { "opengles", false },
         { "vOutColor", "gl_Position" },
         { "o_current_filter", 0 },
-        { "o_c", M_ARRAY(o_c, int, 3, 2, 4) },
+        { "o_c", M_ARRAY(o_c, int, 2, 2, 4) },
         { "add_text", (InvokeFunc) add_text },
         { "o_color_alpha_same", M_ARRAY(o_color_alpha_same, int, 3) },
         { "FILTER_THREE_POINT", 3 },
