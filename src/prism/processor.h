@@ -44,29 +44,34 @@ template <typename T> struct MTDArray {
         if (x >= dimensions[0] || y >= dimensions[1]) {
             throw RuntimeError("Index out of bounds");
         }
-        return ((T*) ptr)[x * dimensions[1] + y];
+        return get(x).at(y);
     }
 
     T& at(int x, int y, int z) {
         if (x >= dimensions[0] || y >= dimensions[1] || z >= dimensions[2]) {
             throw RuntimeError("Index out of bounds");
         }
-        return ((T*) ptr)[x * dimensions[1] * dimensions[2] + y * dimensions[2] + z];
+        return get(x, y).at(z);
     }
 
     T& at(int x, int y, int z, int w) {
         if (x >= dimensions[0] || y >= dimensions[1] || z >= dimensions[2] || w >= dimensions[3]) {
             throw RuntimeError("Index out of bounds");
         }
-        return ((T*) ptr)[x * dimensions[1] * dimensions[2] * dimensions[3] + y * dimensions[2] * dimensions[3] +
-                          z * dimensions[3] + w];
+        return get(x, y, z).at(w);
     }
 
     MTDArray<T> get(int x) {
         if (x >= dimensions[0]) {
             throw RuntimeError("Index out of bounds");
         }
-        return MTDArray<T>{ ptr + x * dimensions[1],
+        auto ptr = this->ptr;
+        auto offset = x*4;
+        for (size_t i = 0; i < dimensions.size()-1; i++) {
+            offset *= dimensions[i+1];
+        }
+        ptr += offset;
+        return MTDArray<T>{ ptr,
                             std::vector<size_t>{ dimensions.begin() + 1, dimensions.end() } };
     }
 
@@ -74,16 +79,14 @@ template <typename T> struct MTDArray {
         if (x >= dimensions[0] || y >= dimensions[1]) {
             throw RuntimeError("Index out of bounds");
         }
-        return MTDArray<T>{ ptr + (x * dimensions[1] + y),
-                            std::vector<size_t>{ dimensions.begin() + 2, dimensions.end() } };
+        return get(x).get(y);
     }
 
     MTDArray<T> get(int x, int y, int z) {
         if (x >= dimensions[0] || y >= dimensions[1] || z >= dimensions[2]) {
             throw RuntimeError("Index out of bounds");
         }
-        return MTDArray<T>{ ptr + (x * dimensions[1] * dimensions[2] + y * dimensions[2] + z),
-                            std::vector<size_t>{ dimensions.begin() + 3, dimensions.end() } };
+        return get(x, y).get(z);
     }
 };
 
