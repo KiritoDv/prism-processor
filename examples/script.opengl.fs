@@ -41,8 +41,8 @@ out vec4 vOutColor;
 @if(o_blend[0]) uniform sampler2D uTexBlend0;
 @if(o_blend[1]) uniform sampler2D uTexBlend1;
 
-uniform int uFrame;
-uniform float uNoiseScale;
+uniform int frame_count;
+uniform float noise_scale;
 
 #define TEX_OFFSET(off) @{texture}(tex, texCoord - off / texSize)
 #define WRAP(x, low, high) mod((x)-(low), (high)-(low)) + (low)
