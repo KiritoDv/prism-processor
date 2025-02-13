@@ -615,7 +615,6 @@ prism::Node prism::Processor::parse(std::string input) {
                     }
 
                     current = ifNode->parent;
-                    children = get_children(current);
 
                     auto ast = parse_parenthesis(c, input.end());
                     previous = c;
@@ -627,8 +626,8 @@ prism::Node prism::Processor::parse(std::string input) {
                     ifNodePtr.elseIfs.push_back(newNode);
                     ifNode->node = ifNodePtr;
 
-                    children->push_back(newNode);
-                    current = children->back();
+                    get_children(current)->push_back(newNode);
+                    current = get_children(current)->back();
                     children = std::get<prism::ElseIfNode>(current->node).children;
 
                     canBeOnTheSameLine = true;
