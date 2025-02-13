@@ -27,3 +27,7 @@ jobs:
         with:
           name: prism-linux-x64
           path: prism-release
+      - name: Test
+        run: |
+          cd build-cmake
+          ctest -j

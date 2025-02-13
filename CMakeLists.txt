@@ -128,3 +128,7 @@ if(NOT USE_STANDALONE)
     target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
     target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 endif()
+
+enable_testing()
+
+add_test(NAME prism COMMAND prism ../examples/script.prism)

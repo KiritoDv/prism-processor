@@ -26,3 +26,7 @@ jobs:
         with:
             name: prism-mac-bin
             path: prism-release
+      - name: Test
+        run: |
+          cd build-cmake
+          ctest -j

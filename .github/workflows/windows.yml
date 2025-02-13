@@ -20,3 +20,7 @@ jobs:
         with:
           name: prism-windows-x64
           path: build/x64/Debug/prism.exe
+      - name: Test
+        run: |
+          cd build/x64
+          ctest -j
