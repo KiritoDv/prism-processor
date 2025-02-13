@@ -2,6 +2,10 @@
 
 @{GLSL_VERSION}
 
+@if(core_opengl || opengles)
+out vec4 vOutColor;
+@end
+
 @for(i in 0..2)
     @if(o_textures[i])
         @{attr} vec2 vTexCoord@{i};
@@ -20,8 +24,12 @@
 @if(o_fog) @{attr} vec4 vFog;
 @if(o_grayscale) @{attr} vec4 vGrayscaleColor;
 
-@for(i in 0..o_inputs) 
-    @{attr} vec@{if o_alpha then 4 else 3} vInput@{i + 1};
+@for(i in 0..o_inputs)
+    @if(o_alpha)
+        @{attr} vec4 vInput@{i + 1};
+    @else
+        @{attr} vec3 vInput@{i + 1};
+    @end
 @end
 
 @if(o_textures[0]) uniform sampler2D uTex0;
@@ -36,7 +44,7 @@
 uniform int uFrame;
 uniform float uNoiseScale;
 
-#define TEX_OFFSET(off) @texture(tex, texCoord - off / texSize)
+#define TEX_OFFSET(off) @{texture}(tex, texCoord - off / texSize)
 #define WRAP(x, low, high) mod((x)-(low), (high)-(low)) + (low)
 
 float random(in vec3 value) {
@@ -66,12 +74,8 @@ vec4 hookTexture2D(in sampler2D tex, in vec2 uv, in vec2 texSize) {
 }
 @else
 vec4 hookTexture2D(in sampler2D tex, in vec2 uv, in vec2 texSize) {
-    return @texture(tex, uv);
+    return @{texture}(tex, uv);
 }
-@end
-
-@if(core_opengl)
-out vec4 vOutColor;
 @end
 
 void main() {
@@ -126,7 +130,13 @@ void main() {
         vec3 texel;
     @end
 
-    @for(c in 0..(if o_2cyc then 2 else 1))
+    @if(o_2cyc)
+        @{f_range = 2}
+    @else
+        @{f_range = 1}
+    @end
+
+    @for(c in 0..f_range)
         @if(c == 1)
             @if(o_alpha)
                 @if(o_c[c][1][2] == SHADER_COMBINED)

@@ -98,11 +98,11 @@ template <typename T> prism::ContextTypes read_array(prism::Processor* proc, pri
         case 1:
             return arrayVar.at(g_idx(0));
         case 2:
-            return arrayVar.at(g_idx(1), g_idx(0));
+            return arrayVar.at(g_idx(0), g_idx(1));
         case 3:
-            return arrayVar.at(g_idx(2), g_idx(1), g_idx(0));
+            return arrayVar.at(g_idx(0), g_idx(1), g_idx(2));
         case 4:
-            return arrayVar.at(g_idx(3), g_idx(2), g_idx(1), g_idx(0));
+            return arrayVar.at(g_idx(0), g_idx(1), g_idx(2), g_idx(3));
     }
 #undef g_idx
     throw prism::SyntaxError("We dont support array indexes bigger than 4");
@@ -217,7 +217,7 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         if (is_type(left, float) || is_type(right, float)) {
             throw SyntaxError("Invalid AND operation, float are not supported");
         }
-        return resLeft && resRight;
+        return resLeft || resRight;
     } else if (is_type(node->node, prism::ast::AndNode)) {
         auto andNode = std::get<prism::ast::AndNode>(node->node);
         auto left = evaluate(andNode.left);

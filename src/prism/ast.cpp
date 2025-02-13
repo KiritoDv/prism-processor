@@ -39,39 +39,19 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseAnd() {
 }
 
 std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseEqual() {
-    auto node = parseIn();
+    auto node = parseMul();
     while (match(lexer::TokenType::EQUAL)) {
-        auto right = parseIn();
+        auto right = parseMul();
         auto parent = std::make_shared<prism::ast::ASTNode>(EqualNode{ node, right });
         node = parent;
     }
     return node;
 }
 
-std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseAdd() {
-    auto node = parseMul();
-    while (match(lexer::TokenType::ADD)) {
-        auto right = parseMul();
-        auto parent = std::make_shared<prism::ast::ASTNode>(AddNode{ node, right });
-        node = parent;
-    }
-    return node;
-}
-
-std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseSub() {
-    auto node = parseAdd();
-    while (match(lexer::TokenType::SUB)) {
-        auto right = parseAdd();
-        auto parent = std::make_shared<prism::ast::ASTNode>(SubNode{ node, right });
-        node = parent;
-    }
-    return node;
-}
-
 std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseMul() {
-    auto node = parsePrimary();
+    auto node = parseDiv();
     while (match(lexer::TokenType::MUL)) {
-        auto right = parsePrimary();
+        auto right = parseDiv();
         auto parent = std::make_shared<prism::ast::ASTNode>(MulNode{ node, right });
         node = parent;
     }
@@ -79,10 +59,30 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseMul() {
 }
 
 std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseDiv() {
-    auto node = parsePrimary();
+    auto node = parseAdd();
     while (match(lexer::TokenType::DIV)) {
-        auto right = parsePrimary();
+        auto right = parseAdd();
         auto parent = std::make_shared<prism::ast::ASTNode>(DivNode{ node, right });
+        node = parent;
+    }
+    return node;
+}
+
+std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseAdd() {
+    auto node = parseSub();
+    while (match(lexer::TokenType::ADD)) {
+        auto right = parseSub();
+        auto parent = std::make_shared<prism::ast::ASTNode>(AddNode{ node, right });
+        node = parent;
+    }
+    return node;
+}
+
+std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parseSub() {
+    auto node = parseIn();
+    while (match(lexer::TokenType::SUB)) {
+        auto right = parseIn();
+        auto parent = std::make_shared<prism::ast::ASTNode>(SubNode{ node, right });
         node = parent;
     }
     return node;

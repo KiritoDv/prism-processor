@@ -63,16 +63,26 @@ template <typename T> struct MTDArray {
     }
 
     MTDArray<T> get(int x) {
-        return MTDArray<T>{ ptr + x * sizeof(T), std::vector<size_t>{ dimensions.begin() + 1, dimensions.end() } };
+        if (x >= dimensions[0]) {
+            throw RuntimeError("Index out of bounds");
+        }
+        return MTDArray<T>{ ptr + x * dimensions[1],
+                            std::vector<size_t>{ dimensions.begin() + 1, dimensions.end() } };
     }
 
     MTDArray<T> get(int x, int y) {
-        return MTDArray<T>{ ptr + x * dimensions[1] * sizeof(T),
+        if (x >= dimensions[0] || y >= dimensions[1]) {
+            throw RuntimeError("Index out of bounds");
+        }
+        return MTDArray<T>{ ptr + (x * dimensions[1] + y) * dimensions[2],
                             std::vector<size_t>{ dimensions.begin() + 2, dimensions.end() } };
     }
 
     MTDArray<T> get(int x, int y, int z) {
-        return MTDArray<T>{ ptr + x * dimensions[1] * dimensions[2] * sizeof(T),
+        if (x >= dimensions[0] || y >= dimensions[1] || z >= dimensions[2]) {
+            throw RuntimeError("Index out of bounds");
+        }
+        return MTDArray<T>{ ptr + ((x * dimensions[1] + y) * dimensions[2] + z),
                             std::vector<size_t>{ dimensions.begin() + 3, dimensions.end() } };
     }
 };
