@@ -74,7 +74,7 @@ template <typename T> struct MTDArray {
         if (x >= dimensions[0] || y >= dimensions[1]) {
             throw RuntimeError("Index out of bounds");
         }
-        return MTDArray<T>{ ptr + (x * dimensions[1] + y) * dimensions[2],
+        return MTDArray<T>{ ptr + (x * dimensions[1] + y),
                             std::vector<size_t>{ dimensions.begin() + 2, dimensions.end() } };
     }
 
@@ -82,7 +82,7 @@ template <typename T> struct MTDArray {
         if (x >= dimensions[0] || y >= dimensions[1] || z >= dimensions[2]) {
             throw RuntimeError("Index out of bounds");
         }
-        return MTDArray<T>{ ptr + ((x * dimensions[1] + y) * dimensions[2] + z),
+        return MTDArray<T>{ ptr + (x * dimensions[1] * dimensions[2] + y * dimensions[2] + z),
                             std::vector<size_t>{ dimensions.begin() + 3, dimensions.end() } };
     }
 };
