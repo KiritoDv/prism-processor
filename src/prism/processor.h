@@ -66,7 +66,7 @@ template <typename T> struct MTDArray {
             throw RuntimeError("Index out of bounds");
         }
         auto ptr = this->ptr;
-        auto offset = x*4;
+        auto offset = x * sizeof(T);
         for (size_t i = 0; i < dimensions.size()-1; i++) {
             offset *= dimensions[i+1];
         }
