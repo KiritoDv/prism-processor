@@ -526,14 +526,13 @@ prism::Node prism::Processor::parse(std::string input) {
     int ifCount = 0;
     while (c != input.end()) {
         if (canBeOnTheSameLine) {
-            if (*c == ';') {
+            if (!std::isspace(*c)) {
                 isOnTheSameLine = true;
                 c++;
                 continue;
             }
             if (isOnTheSameLine) {
                 if (*c == '\n') {
-                    isOnTheSameLine = false;
                     canBeOnTheSameLine = false;
                     children->push_back(
                         std::make_shared<prism::Node>(prism::TextNode{ std::string(previous, c + 1) }, current));
@@ -572,25 +571,31 @@ prism::Node prism::Processor::parse(std::string input) {
                     isOnTheSameLine = false;
                     continue;
                 } else if (expr == "else") {
-                    if (!is_type(current->node, prism::IfNode) && !is_type(current->node, prism::ElseIfNode)) {
-                        throw prism::SyntaxError("Else without if");
-                    }
                     auto ifNode = current;
+                    if (!is_type(ifNode->node, prism::IfNode) && !is_type(ifNode->node, prism::ElseIfNode) ) {
+                        auto previous = children->at(children->size() - 2);
+                        if (!(isOnTheSameLine && (is_type(previous->node, prism::IfNode) || is_type(previous->node, prism::ElseIfNode))) ) {
+                            throw prism::SyntaxError("Else without if");
+                        } else if (isOnTheSameLine && (is_type(previous->node, prism::IfNode) || is_type(previous->node, prism::ElseIfNode))) {
+                            ifNode = previous;
+                        }
+                    }
 
-                    current = current->parent;
-                    children = get_children(current);
-
-                    auto newNode = std::make_shared<prism::Node>(
-                        prism::ElseNode{ std::make_shared<std::vector<std::shared_ptr<prism::Node>>>() }, current);
                     if (is_type(ifNode->node, prism::ElseIfNode)) {
                         ifNode = std::get<prism::ElseIfNode>(ifNode->node).parentIf;
                     }
+
+                    current = ifNode->parent;
+
+                    auto newNode = std::make_shared<prism::Node>(
+                        prism::ElseNode{ std::make_shared<std::vector<std::shared_ptr<prism::Node>>>() }, current);
+
                     auto ifNodePtr = std::get<prism::IfNode>(ifNode->node);
                     ifNodePtr.elseBody = newNode;
                     ifNode->node = ifNodePtr;
 
-                    children->push_back(newNode);
-                    current = children->back();
+                    get_children(current)->push_back(newNode);
+                    current = get_children(current)->back();
                     children = std::get<prism::ElseNode>(current->node).children;
 
                     canBeOnTheSameLine = true;
