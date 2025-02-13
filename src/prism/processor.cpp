@@ -528,8 +528,6 @@ prism::Node prism::Processor::parse(std::string input) {
         if (canBeOnTheSameLine) {
             if (!std::isspace(*c)) {
                 isOnTheSameLine = true;
-                c++;
-                continue;
             }
             if (isOnTheSameLine) {
                 if (*c == '\n') {
@@ -602,16 +600,21 @@ prism::Node prism::Processor::parse(std::string input) {
                     isOnTheSameLine = false;
                     continue;
                 } else if (expr == "elseif") {
-                    if (!is_type(current->node, prism::IfNode) && !is_type(current->node, prism::ElseIfNode)) {
-                        throw prism::SyntaxError("Else without if");
-                    }
                     auto ifNode = current;
+                    if (!is_type(ifNode->node, prism::IfNode) && !is_type(ifNode->node, prism::ElseIfNode) ) {
+                        auto previous = children->at(children->size() - 2);
+                        if (!(isOnTheSameLine && (is_type(previous->node, prism::IfNode) || is_type(previous->node, prism::ElseIfNode))) ) {
+                            throw prism::SyntaxError("Else without if");
+                        } else if (isOnTheSameLine && (is_type(previous->node, prism::IfNode) || is_type(previous->node, prism::ElseIfNode))) {
+                            ifNode = previous;
+                        }
+                    }
 
                     if (is_type(ifNode->node, prism::ElseIfNode)) {
                         ifNode = std::get<prism::ElseIfNode>(ifNode->node).parentIf;
                     }
 
-                    current = current->parent;
+                    current = ifNode->parent;
                     children = get_children(current);
 
                     auto ast = parse_parenthesis(c, input.end());
