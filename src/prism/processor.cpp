@@ -394,16 +394,17 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
                 }
                 auto ptr = std::get<InvokeFunc>(value);
                 auto raw = invoke(ptr, args.data(), args.size());
-                if (raw == (uintptr_t) nullptr) {
-                    throw SyntaxError("Failed to execute function");
-                }
                 for (auto& c : args) {
                     delete (ContextTypes*) c;
                 }
                 args.clear();
-                ContextTypes cnv = *((ContextTypes*) raw);
-                delete (ContextTypes*) raw;
-                return cnv;
+                if (raw != (uintptr_t) nullptr) {
+                    ContextTypes cnv = *((ContextTypes*) raw);
+                    delete (ContextTypes*) raw;
+                    return cnv;
+                } else {
+                    return Void{};
+                }
             }
         }
         throw SyntaxError("Unsupported function call");
