@@ -20,7 +20,7 @@ jobs:
       - name: Create Package
         run: |
           mkdir prism-release
-          mv build-cmake/prism prism-release/
+          cp build-cmake/prism prism-release/
           cp "$(ldconfig -p | grep libbz2.so.1.0 | tr ' ' '\n' | grep /| head -n1)" prism-release/
       - name: Publish packaged artifacts
         uses: actions/upload-artifact@v4
