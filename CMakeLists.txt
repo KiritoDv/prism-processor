@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
 
 # Set build options
-option(USE_STANDALONE "Build as a standalone executable" ON)
+option(PRISM_STANDALONE "Build as a PRISM_STANDALONE executable" ON)
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 option(DEBUG_PARSE "Enable debug node" OFF)
 
@@ -41,8 +41,8 @@ if(ENABLE_ASAN)
 endif()
 
 # Build
-if (USE_STANDALONE)
-    add_definitions(-DSTANDALONE)
+if (PRISM_STANDALONE)
+    add_definitions(-DPRISM_STANDALONE)
     add_executable(${PROJECT_NAME} ${SRC_DIR})
 	set(LINK_TYPE "MD")
 else()
@@ -99,7 +99,7 @@ endif()
 
 # Fetch Dependencies
 
-if(NOT USE_STANDALONE AND EXISTS "/mnt/c/WINDOWS/system32/wsl.exe")
+if(NOT PRISM_STANDALONE AND EXISTS "/mnt/c/WINDOWS/system32/wsl.exe")
     FetchContent_Declare(
         GSL
         GIT_REPOSITORY https://github.com/Microsoft/GSL.git
@@ -109,7 +109,7 @@ if(NOT USE_STANDALONE AND EXISTS "/mnt/c/WINDOWS/system32/wsl.exe")
     target_link_libraries(${PROJECT_NAME} PRIVATE GSL)
 endif()
 
-if(USE_STANDALONE)
+if(PRISM_STANDALONE)
 	FetchContent_Declare(
 		spdlog
 		GIT_REPOSITORY https://github.com/gabime/spdlog.git
@@ -123,7 +123,7 @@ else()
 	target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog)
 endif()
 
-if(NOT USE_STANDALONE)
+if(NOT PRISM_STANDALONE)
     target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
     target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
     target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -131,4 +131,4 @@ endif()
 
 enable_testing()
 
-add_test(NAME prism COMMAND prism ../examples/script.prism)
+add_test(NAME prism COMMAND prism ../examples/script.opengl.fs)
