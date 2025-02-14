@@ -1,6 +1,6 @@
 #include "prism/processor.h"
 
-#ifdef STANDALONE
+#ifdef PRISM_STANDALONE
 
 #include <spdlog/spdlog.h>
 #include <fstream>

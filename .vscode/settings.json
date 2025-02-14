@@ -92,6 +92,6 @@
     "__tree": "cpp"
   },
   "cmake.debugConfig": {
-    "args": ["../examples/script.prism"]
+    "args": ["../examples/script.opengl.fs"]
   }
 }

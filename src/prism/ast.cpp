@@ -180,7 +180,11 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parsePrimary() {
         if (match(lexer::TokenType::LPAREN)) {
             auto args = std::make_shared<std::vector<std::shared_ptr<ASTNode>>>();
             do {
-                args->push_back(parse());
+                if (isNext(lexer::TokenType::RPAREN)) {
+                    break;
+                }
+                auto arg = parse();
+                args->push_back(arg);
             } while (match(lexer::TokenType::COMMA));
             expect(lexer::TokenType::RPAREN);
             return std::make_shared<ASTNode>(FunctionCallNode{ variable, args });
@@ -206,6 +210,10 @@ prism::lexer::Token prism::ast::Parser::expect(lexer::TokenType type) {
     }
 
     throw prism::SyntaxError("Unexpected token");
+}
+
+bool prism::ast::Parser::isNext(lexer::TokenType type) {
+    return pos < tokens.size() && tokens[pos].type == type;
 }
 
 prism::lexer::Token prism::ast::Parser::previous() {

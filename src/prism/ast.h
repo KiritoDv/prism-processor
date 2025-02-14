@@ -109,6 +109,7 @@ class Parser {
     std::shared_ptr<ASTNode> parsePrimary();
     bool match(lexer::TokenType type);
     lexer::Token expect(lexer::TokenType type);
+    bool isNext(lexer::TokenType type);
     lexer::Token previous();
 };
 } // namespace prism::ast
