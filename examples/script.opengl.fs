@@ -78,6 +78,12 @@ vec4 hookTexture2D(in sampler2D tex, in vec2 uv, in vec2 texSize) {
 }
 @end
 
+vec3 hueShift(vec3 color, float hue) {
+    const vec3 k = vec3(0.57735, 0.57735, 0.57735);
+    float cosAngle = cos(hue);
+    return vec3(color * cosAngle + cross(k, color) * sin(hue) + k * dot(k, color) * (1.0 - cosAngle));
+}
+
 void main() {
     @for(i in 0..2)
         @if(o_textures[i])
@@ -207,4 +213,6 @@ void main() {
     @if(srgb_mode)
         @{vOutColor} = fromLinear(@{vOutColor});
     @end
+
+    @{vOutColor}.rgb = hueShift(@{vOutColor}.rgb, frame_count / 100.0);
 }

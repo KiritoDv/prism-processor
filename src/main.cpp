@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
     input.close();
 
     int o_textures[2] = { 1, 1 };
-    int o_clamp[2][2] = { { 1, 1 }, { 1, 1 } };
+    int o_clamp[2][2] = { { 1, 0 }, { 0, 1 } };
     float o_float[] = { 1.1f, 2.2f, 3.3f, 4.4f, 5.5f, 6.6f };
     int o_masks[2] = { 1, 2 };
     int o_blend[2] = { 1, 2 };
