@@ -1,7 +1,5 @@
 @prism(type='fragment', name='Fast3D Fragment Shader', version='1.0.0', description='Ported shader to prism', author='Emill & Prism Team')
 
-@{GLSL_VERSION}
-
 @for(i in 0..2)
     @for(j in 0..2)
         @if(i == 9)
