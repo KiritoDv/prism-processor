@@ -119,7 +119,7 @@ if(PRISM_STANDALONE)
 	FetchContent_MakeAvailable(spdlog)
 	target_link_libraries(${PROJECT_NAME} PRIVATE spdlog)
 else()
-	find_package(spdlog REQUIRED)
+	find_package(spdlog QUIET)
 	target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog)
 endif()
 
