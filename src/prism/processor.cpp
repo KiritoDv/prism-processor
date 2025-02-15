@@ -362,6 +362,25 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         }
 
         return prism::GeneratedRange{ (size_t) std::get<int>(start), (size_t) std::get<int>(end) };
+    } else if (is_type(node->node, prism::ast::IfNode)) {
+        auto ifNode = std::get<prism::ast::IfNode>(node->node);
+        auto condition = evaluate(ifNode.condition);
+        if ((is_type(condition, bool) && std::get<bool>(condition)) ||
+            (is_type(condition, int) && std::get<int>(condition) == 1)) {
+            return evaluate(ifNode.body);
+        } else if (!ifNode.elseIfs->empty()) {
+            for (const auto& elseIf : *ifNode.elseIfs) {
+                condition = evaluate(elseIf->condition);
+                if (is_type(condition, bool) && std::get<bool>(condition)) {
+                    return evaluate(elseIf->body);
+                }
+            }
+        }
+
+        if (ifNode.elseBody != nullptr) {
+            return evaluate(ifNode.elseBody);
+        }
+        throw SyntaxError("Invalid IF condition");
     } else if (is_type(node->node, prism::ast::FunctionCallNode)) {
         auto func = std::get<prism::ast::FunctionCallNode>(node->node);
         if (m_items.contains(func.name->name)) {
@@ -671,7 +690,6 @@ void prism::Processor::evaluate_node(std::shared_ptr<std::vector<std::shared_ptr
         } else if (is_type(child->node, prism::IfNode)) {
             auto ifNode = std::get<prism::IfNode>(child->node);
             auto condition = evaluate(ifNode.condition);
-            bool fallback = false;
             if ((is_type(condition, bool) && std::get<bool>(condition)) ||
                 (is_type(condition, int) && std::get<int>(condition) == 1)) {
                 evaluate_node(ifNode.children);
