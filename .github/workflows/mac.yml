@@ -30,3 +30,8 @@ jobs:
         run: |
           cd build-cmake
           ctest -j
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: build-cmake/Testing/Temporary
