@@ -114,7 +114,7 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
                 pos++;
                 break;
             case 'i':
-                if (peek() == 'n') {
+                if (peek() == 'n' && input.substr(pos, 7) != "include") {
                     tokens.emplace_back(TokenType::IN, "in");
                     pos += 2;
                 } else if (peek() == 'f') {

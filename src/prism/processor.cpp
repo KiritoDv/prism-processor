@@ -33,9 +33,11 @@ void prism::Processor::populate(const ContextItems& items) {
     m_items = items;
 }
 
-void prism::Processor::load(const std::string& data) {
+std::string prism::Processor::parse_header(const std::string& data) {
+    std::vector<std::string> m_lines;
     std::stringstream ss(data);
     std::string line;
+    std::string result;
     while (std::getline(ss, line)) {
         m_lines.push_back(line);
     }
@@ -43,7 +45,7 @@ void prism::Processor::load(const std::string& data) {
     if (m_lines.empty()) {
         throw RuntimeError("No data to process");
     }
-
+    
     if (m_lines[0].rfind("@prism", 0) != 0) {
         throw SyntaxError("Invalid prism file");
     }
@@ -64,11 +66,16 @@ void prism::Processor::load(const std::string& data) {
     if (m_lines[0].empty()) {
         m_lines.erase(m_lines.begin());
     }
-    m_input = "";
+    result = "";
     for (const auto& n_line : m_lines) {
-        m_input += n_line + "\n";
+        result += n_line + "\n";
     }
     SPDLOG_DEBUG("Prism script: {} v{} by {}", name, version, author);
+    return result;
+}
+
+void prism::Processor::load(const std::string& data) {
+   m_input = parse_header(data);
 }
 
 template <typename T> prism::ContextTypes read_array(prism::Processor* proc, prism::ast::ArrayAccessNode& array) {
@@ -524,7 +531,8 @@ prism::Node prism::Processor::parse(std::string input) {
     bool canBeOnTheSameLine = false;
     bool isOnTheSameLine = false;
     int ifCount = 0;
-    while (c != input.end()) {
+    auto end = input.end();
+    while (c != end) {
         if (canBeOnTheSameLine) {
             if (!std::isspace(*c)) {
                 isOnTheSameLine = true;
@@ -647,11 +655,29 @@ prism::Node prism::Processor::parse(std::string input) {
                     continue;
                 } else if (expr == "end") {
                     if (current == root) {
-                        throw prism::SyntaxError("Unmatched end");
+                        throw prism::SyntaxError("Unmatched end at " + input.substr(previous - input.begin()));
                     }
                     current = current->parent;
                     children = get_children(current);
                     previous = c;
+                } else if(expr == "include") {
+                    if(this->m_include_loader == nullptr) {
+                        throw RuntimeError("Include loader not set");
+                    }
+                    auto file = parse_parenthesis(c, input.end());
+                    previous = c;
+                    std::string path = std::get<std::string>(evaluate(file));
+                    auto res = this->m_include_loader(path);
+                    if(!res.has_value()){
+                        throw SyntaxError("Failed to load include from" + path);
+                    }
+                    // This is a fix for coco
+                    auto buffer = " " + parse_header(res.value());
+                    auto pos = c - input.begin();
+                    input.insert(c, buffer.begin(), buffer.end());
+                    c = input.begin() + pos;
+                    previous = c;
+                    end = input.end();
                 }
             }
         }

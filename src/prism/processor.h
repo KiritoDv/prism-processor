@@ -159,16 +159,22 @@ struct RuntimeContext {
     bool skipUntilEnd = false;
 };
 
+typedef std::optional<std::string> (*IncludeFunc)(const std::string&);
+
 class Processor {
   public:
     void populate(const ContextItems& items);
     void load(const std::string& input);
+    std::string parse_header(const std::string& data);
     prism::Node parse(std::string input);
     ContextTypes evaluate(const std::shared_ptr<prism::ast::ASTNode>& node);
     void evaluate_node(std::shared_ptr<std::vector<std::shared_ptr<prism::Node>>>& children);
     std::string process();
     ContextItems getTypes() {
         return this->m_items;
+    }
+    void bind_include_loader(IncludeFunc func){
+        m_include_loader = func;
     }
 
     template <typename T> void array_iterate(prism::ForNode& node, prism::ForContext& context) {
@@ -185,7 +191,8 @@ class Processor {
     ContextItems m_items;
     RuntimeContext m_context;
     std::stringstream m_output;
-    std::vector<std::string> m_lines;
     std::string m_input;
+    std::shared_ptr<prism::Node> m_root;
+    IncludeFunc m_include_loader = nullptr;
 };
 } // namespace prism

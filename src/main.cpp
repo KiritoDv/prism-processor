@@ -158,6 +158,19 @@ prism::ContextTypes* append_formula(prism::ContextTypes* a_arg, prism::ContextTy
     return new prism::ContextTypes{ out };
 }
 
+std::optional<std::string> include_fs(const std::string& path){
+    std::ifstream input(path);
+    if (!input.is_open()) {
+        SPDLOG_ERROR("Failed to open file: {}", path);
+        return std::nullopt;
+    }
+
+    std::vector<uint8_t> data = std::vector<uint8_t>(std::istreambuf_iterator(input), {});
+    input.close();
+
+    return std::string(data.begin(), data.end());
+}
+
 int main(int argc, char** argv) {
     if (argc < 2) {
         SPDLOG_ERROR("Usage: {} <file>", argv[0]);
@@ -272,9 +285,10 @@ int main(int argc, char** argv) {
     };
 
     prism::Processor processor;
+    processor.bind_include_loader(include_fs);
     processor.populate(vars);
     processor.load(std::string(data.begin(), data.end()));
-    SPDLOG_DEBUG("Processed data: \n{}", processor.process());
+    SPDLOG_INFO("Processed data: \n{}", processor.process());
     return 0;
 }
 #endif
