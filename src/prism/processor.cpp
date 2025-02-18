@@ -68,7 +68,7 @@ void prism::Processor::load(const std::string& data) {
     for (const auto& n_line : m_lines) {
         m_input += n_line + "\n";
     }
-    SPDLOG_INFO("Prism script: {} v{} by {}", name, version, author);
+    SPDLOG_DEBUG("Prism script: {} v{} by {}", name, version, author);
 }
 
 template <typename T> prism::ContextTypes read_array(prism::Processor* proc, prism::ast::ArrayAccessNode& array) {

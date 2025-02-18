@@ -274,7 +274,7 @@ int main(int argc, char** argv) {
     prism::Processor processor;
     processor.populate(vars);
     processor.load(std::string(data.begin(), data.end()));
-    SPDLOG_INFO("Processed data: \n{}", processor.process());
+    SPDLOG_DEBUG("Processed data: \n{}", processor.process());
     return 0;
 }
 #endif
