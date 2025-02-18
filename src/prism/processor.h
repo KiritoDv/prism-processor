@@ -5,6 +5,7 @@
 #include <string>
 #include <variant>
 #include <sstream>
+#include <optional>
 #include <unordered_map>
 #include <cstdlib>
 
