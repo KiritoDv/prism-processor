@@ -2,7 +2,7 @@
 
 @{GLSL_VERSION}
 
-@include("examples/iftest.fs")
+@include("../examples/iftest.fs")
 
 @if(core_opengl || opengles)
 out vec4 vOutColor;
