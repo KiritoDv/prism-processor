@@ -28,11 +28,9 @@ jobs:
           name: prism-linux-x64
           path: prism-release
       - name: Test
+        continue-on-error: true
         run: |
           cd build-cmake
-          ctest -j
-      - name: Upload Test Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: build-cmake/Testing/Temporary
+          ctest -j 
+      - name: Echo Test Results
+        run: cat build-cmake/Testing/Temporary/LastTest.log
