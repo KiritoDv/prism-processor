@@ -671,13 +671,13 @@ prism::Node prism::Processor::parse(std::string input) {
                     if(!res.has_value()){
                         throw SyntaxError("Failed to load include from" + path);
                     }
-                    // This is a fix for coco
-                    auto buffer = " " + parse_header(res.value());
+                    auto buffer = parse_header(res.value());
                     auto pos = c - input.begin();
                     input.insert(c, buffer.begin(), buffer.end());
                     c = input.begin() + pos;
                     previous = c;
                     end = input.end();
+                    continue;
                 }
             }
         }
