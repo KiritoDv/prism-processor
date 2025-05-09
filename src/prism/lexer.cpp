@@ -31,7 +31,7 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
         }
 
         if (isKeyWord(input, pos) && std::isalpha(current) || current == '_') {
-            tokens.emplace_back(TokenType::Inentifier, parseIdentifier());
+            tokens.emplace_back(TokenType::Identifier, parseIdentifier());
             continue;
         }
 
@@ -121,7 +121,7 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
                     tokens.emplace_back(TokenType::If, "if");
                     pos += 2;
                 } else {
-                    tokens.emplace_back(TokenType::Inentifier, parseIdentifier());
+                    tokens.emplace_back(TokenType::Identifier, parseIdentifier());
                 }
                 break;
             case 'e':
@@ -133,10 +133,10 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
                         tokens.emplace_back(TokenType::Elseif, "elseif");
                         pos += 6;
                     } else {
-                        tokens.emplace_back(TokenType::Inentifier, parseIdentifier());
+                        tokens.emplace_back(TokenType::Identifier, parseIdentifier());
                     }
                 } else {
-                    tokens.emplace_back(TokenType::Inentifier, parseIdentifier());
+                    tokens.emplace_back(TokenType::Identifier, parseIdentifier());
                 }
                 break;
             case 't':
@@ -147,7 +147,7 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
                     tokens.emplace_back(TokenType::True, "true");
                     pos += 4;
                 } else {
-                    tokens.emplace_back(TokenType::Inentifier, parseIdentifier());
+                    tokens.emplace_back(TokenType::Identifier, parseIdentifier());
                 }
                 break;
             case 'f':
@@ -155,7 +155,7 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
                     tokens.emplace_back(TokenType::False, "false");
                     pos += 5;
                 } else {
-                    tokens.emplace_back(TokenType::Inentifier, parseIdentifier());
+                    tokens.emplace_back(TokenType::Identifier, parseIdentifier());
                 }
                 break;
             case '.':

@@ -160,7 +160,7 @@ std::shared_ptr<prism::ast::ASTNode> prism::ast::Parser::parsePrimary() {
         return std::make_shared<ASTNode>(NotNode{ parsePrimary() });
     }
 
-    if (match(lexer::TokenType::Inentifier)) {
+    if (match(lexer::TokenType::Identifier)) {
         std::string varName = previous().value;
         std::shared_ptr<VariableNode> variable = std::make_shared<VariableNode>(VariableNode{ varName });
 
