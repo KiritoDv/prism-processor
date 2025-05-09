@@ -6,33 +6,33 @@
 
 namespace prism::lexer {
 enum class TokenType {
-    IDENTIFIER,  // Variable names
-    INTEGER,     // Number
-    FLOAT,       // Float
-    LPAREN,      // '('
-    RPAREN,      // ')'
-    LBRACKET,    // '['
-    RBRACKET,    // ']'
-    COMMA,       // ','
-    OR,          // '||'
-    AND,         // '&&'
-    EQUAL,       // '=='
-    ASSIGN,      // '='
-    NOT,         // '!'
-    ADD,         // '+'
-    SUB,         // '-'
-    MUL,         // '*'
-    DIV,         // '/'
-    IN,          // in
-    QUOTE,       // '"'
-    IF,          // if
-    THEN,        // then
-    ELSE,        // else
-    ELSEIF,      // elseif
-    RANGE,       // ..
-    TRUE,        // true
-    FALSE,       // false
-    END_OF_INPUT // End of script
+    Inentifier,  // Variable names
+    Integer,     // Number
+    Float,       // Float
+    LParen,      // '('
+    RParen,      // ')'
+    LBracket,    // '['
+    RBracket,    // ']'
+    Comma,       // ','
+    Or,          // '||'
+    And,         // '&&'
+    Equal,       // '=='
+    Assign,      // '='
+    Not,         // '!'
+    Add,         // '+'
+    Sub,         // '-'
+    Mul,         // '*'
+    Div,         // '/'
+    In,          // in
+    Quote,       // '"'
+    If,          // if
+    Then,        // then
+    Else,        // else
+    Elseif,      // elseif
+    Range,       // ..
+    True,        // true
+    False,       // false
+    EndOfinput // End of script
 };
 
 struct Token {
