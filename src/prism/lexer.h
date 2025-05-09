@@ -6,7 +6,7 @@
 
 namespace prism::lexer {
 enum class TokenType {
-    Inentifier,  // Variable names
+    Identifier,  // Variable names
     Integer,     // Number
     Float,       // Float
     LParen,      // '('
