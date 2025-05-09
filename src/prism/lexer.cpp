@@ -16,7 +16,7 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
         char current = input[pos];
         if (inString) {
             if (current == '"') {
-                tokens.emplace_back(TokenType::QUOTE, currentString);
+                tokens.emplace_back(TokenType::Quote, currentString);
                 currentString.clear();
                 inString = false;
             } else {
@@ -31,7 +31,7 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
         }
 
         if (isKeyWord(input, pos) && std::isalpha(current) || current == '_') {
-            tokens.emplace_back(TokenType::IDENTIFIER, parseIdentifier());
+            tokens.emplace_back(TokenType::Inentifier, parseIdentifier());
             continue;
         }
 
@@ -39,37 +39,37 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
             bool hasDecimal = false;
             if (input.substr(pos + 1, 2) == "..") {
                 auto result = parseNumber(nullptr);
-                tokens.emplace_back(TokenType::INTEGER, result);
+                tokens.emplace_back(TokenType::Integer, result);
             } else {
                 auto result = parseNumber(&hasDecimal);
-                tokens.emplace_back(hasDecimal ? TokenType::FLOAT : TokenType::INTEGER, result);
+                tokens.emplace_back(hasDecimal ? TokenType::Float : TokenType::Integer, result);
             }
             continue;
         }
 
         switch (current) {
             case '(':
-                tokens.emplace_back(TokenType::LPAREN, "(");
+                tokens.emplace_back(TokenType::LParen, "(");
                 pos++;
                 break;
             case ')':
-                tokens.emplace_back(TokenType::RPAREN, ")");
+                tokens.emplace_back(TokenType::RParen, ")");
                 pos++;
                 break;
             case ',':
-                tokens.emplace_back(TokenType::COMMA, ",");
+                tokens.emplace_back(TokenType::Comma, ",");
                 pos++;
                 break;
             case '[':
-                tokens.emplace_back(TokenType::LBRACKET, "[");
+                tokens.emplace_back(TokenType::LBracket, "[");
                 pos++;
                 break;
             case ']':
-                tokens.emplace_back(TokenType::RBRACKET, "]");
+                tokens.emplace_back(TokenType::RBracket, "]");
                 pos++;
                 break;
             case '!':
-                tokens.emplace_back(TokenType::NOT, "!");
+                tokens.emplace_back(TokenType::Not, "!");
                 pos++;
                 break;
             case '"':
@@ -78,89 +78,89 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
                 break;
             case '|':
                 if (peek() == '|') {
-                    tokens.emplace_back(TokenType::OR, "||");
+                    tokens.emplace_back(TokenType::Or, "||");
                     pos += 2;
                 }
                 break;
             case '&':
                 if (peek() == '&') {
-                    tokens.emplace_back(TokenType::AND, "&&");
+                    tokens.emplace_back(TokenType::And, "&&");
                     pos += 2;
                 }
                 break;
             case '=':
                 if (peek() == '=') {
-                    tokens.emplace_back(TokenType::EQUAL, "==");
+                    tokens.emplace_back(TokenType::Equal, "==");
                     pos += 2;
                 } else {
-                    tokens.emplace_back(TokenType::ASSIGN, "=");
+                    tokens.emplace_back(TokenType::Assign, "=");
                     pos++;
                 }
                 break;
             case '+':
-                tokens.emplace_back(TokenType::ADD, "+");
+                tokens.emplace_back(TokenType::Add, "+");
                 pos++;
                 break;
             case '-':
-                tokens.emplace_back(TokenType::SUB, "-");
+                tokens.emplace_back(TokenType::Sub, "-");
                 pos++;
                 break;
             case '*':
-                tokens.emplace_back(TokenType::MUL, "*");
+                tokens.emplace_back(TokenType::Mul, "*");
                 pos++;
                 break;
             case '/':
-                tokens.emplace_back(TokenType::DIV, "/");
+                tokens.emplace_back(TokenType::Div, "/");
                 pos++;
                 break;
             case 'i':
                 if (peek() == 'n' && input.substr(pos, 7) != "include") {
-                    tokens.emplace_back(TokenType::IN, "in");
+                    tokens.emplace_back(TokenType::In, "in");
                     pos += 2;
                 } else if (peek() == 'f') {
-                    tokens.emplace_back(TokenType::IF, "if");
+                    tokens.emplace_back(TokenType::If, "if");
                     pos += 2;
                 } else {
-                    tokens.emplace_back(TokenType::IDENTIFIER, parseIdentifier());
+                    tokens.emplace_back(TokenType::Inentifier, parseIdentifier());
                 }
                 break;
             case 'e':
                 if (peek() == 'l') {
                     if (input.substr(pos, 4) == "else") {
-                        tokens.emplace_back(TokenType::ELSE, "else");
+                        tokens.emplace_back(TokenType::Else, "else");
                         pos += 4;
                     } else if (input.substr(pos, 6) == "elseif") {
-                        tokens.emplace_back(TokenType::ELSEIF, "elseif");
+                        tokens.emplace_back(TokenType::Elseif, "elseif");
                         pos += 6;
                     } else {
-                        tokens.emplace_back(TokenType::IDENTIFIER, parseIdentifier());
+                        tokens.emplace_back(TokenType::Inentifier, parseIdentifier());
                     }
                 } else {
-                    tokens.emplace_back(TokenType::IDENTIFIER, parseIdentifier());
+                    tokens.emplace_back(TokenType::Inentifier, parseIdentifier());
                 }
                 break;
             case 't':
                 if (input.substr(pos, 4) == "then") {
-                    tokens.emplace_back(TokenType::THEN, "then");
+                    tokens.emplace_back(TokenType::Then, "then");
                     pos += 4;
                 } else if (input.substr(pos, 4) == "true") {
-                    tokens.emplace_back(TokenType::TRUE, "true");
+                    tokens.emplace_back(TokenType::True, "true");
                     pos += 4;
                 } else {
-                    tokens.emplace_back(TokenType::IDENTIFIER, parseIdentifier());
+                    tokens.emplace_back(TokenType::Inentifier, parseIdentifier());
                 }
                 break;
             case 'f':
                 if (input.substr(pos, 5) == "false") {
-                    tokens.emplace_back(TokenType::FALSE, "false");
+                    tokens.emplace_back(TokenType::False, "false");
                     pos += 5;
                 } else {
-                    tokens.emplace_back(TokenType::IDENTIFIER, parseIdentifier());
+                    tokens.emplace_back(TokenType::Inentifier, parseIdentifier());
                 }
                 break;
             case '.':
                 if (peek() == '.') {
-                    tokens.emplace_back(TokenType::RANGE, "..");
+                    tokens.emplace_back(TokenType::Range, "..");
                     pos += 2;
                 } else {
                     throw prism::SyntaxError("Unexpected character " + std::string(1, current));
@@ -174,7 +174,7 @@ std::vector<prism::lexer::Token> prism::lexer::Lexer::tokenize() {
         }
     }
 
-    tokens.emplace_back(TokenType::END_OF_INPUT);
+    tokens.emplace_back(TokenType::EndOfinput);
     return tokens;
 }
 
