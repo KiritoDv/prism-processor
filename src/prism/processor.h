@@ -28,6 +28,8 @@
         }                           \
     }
 
+#define CONTAINS(_map, value) ((_map).find(value) != (_map).end())
+
 namespace prism {
 // todo: handle out of bounds access
 template <typename T> struct MTDArray {
