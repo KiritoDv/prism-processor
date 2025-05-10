@@ -103,7 +103,7 @@ struct ForContext {
 
 struct Void {};
 
-typedef std::variant<Void, bool, int, float, MTDArray<bool>, MTDArray<int>, MTDArray<float>, GeneratedRange,
+typedef std::variant<Void, int, float, MTDArray<bool>, MTDArray<int>, MTDArray<float>, GeneratedRange,
                      std::string, ForContext, InvokeFunc>
     ContextTypes;
 typedef std::unordered_map<std::string, ContextTypes> ContextItems;
