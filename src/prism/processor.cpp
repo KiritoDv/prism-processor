@@ -5,30 +5,28 @@
 #include "utils/exceptions.h"
 #include "utils/gv.h"
 
-#define IS_TAG(x) items.find(x) != items.end()
-
 void prism::Processor::populate(const ContextItems& items) {
-    if (IS_TAG("@if")) {
+    if (CONTAINS(items, "@if")) {
         throw SyntaxError("Reserved keyword if");
     }
 
-    if (IS_TAG("@else")) {
+    if (CONTAINS(items, "@else")) {
         throw SyntaxError("Reserved keyword else");
     }
 
-    if (IS_TAG("@elseif")) {
+    if (CONTAINS(items, "@elseif")) {
         throw SyntaxError("Reserved keyword elseif");
     }
 
-    if (IS_TAG("@for")) {
+    if (CONTAINS(items, "@for")) {
         throw SyntaxError("Reserved keyword for");
     }
 
-    if (IS_TAG("@end")) {
+    if (CONTAINS(items, "@end")) {
         throw SyntaxError("Reserved keyword end");
     }
 
-    if (IS_TAG("@prism")) {
+    if (CONTAINS(items, "@prism")) {
         throw SyntaxError("Reserved keyword prism");
     }
 
@@ -55,7 +53,7 @@ std::string prism::Processor::parse_header(const std::string& data) {
     auto header = gv::parenthesis(m_lines[0].substr(6));
     auto args = gv::il_args(header[0]);
 
-    if (args.find("type") == args.end()) {
+    if (!CONTAINS(args, "type")) {
         throw SyntaxError("Type not specified");
     }
 
@@ -122,7 +120,7 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         return false;
     if (is_type(node->node, prism::ast::VariableNode)) {
         auto var = std::get<prism::ast::VariableNode>(node->node);
-        if (this->m_items.find(var.name) == this->m_items.end()) {
+        if (!CONTAINS(this->m_items, var.name)) {
             throw SyntaxError("Unknown variable " + var.name);
         }
         auto value = this->m_items.at(var.name);
@@ -151,7 +149,7 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         return std::get<prism::ast::FloatNode>(node->node).value;
     } else if (is_type(node->node, prism::ast::ArrayAccessNode)) {
         auto array = std::get<prism::ast::ArrayAccessNode>(node->node);
-        if (this->m_items.find(array.name->name) == this->m_items.end()) {
+        if (!CONTAINS(this->m_items, array.name->name)) {
             throw SyntaxError("Unknown variable " + array.name->name);
         }
         auto var = this->m_items.at(array.name->name);
@@ -364,7 +362,7 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         throw SyntaxError("Invalid IF condition");
     } else if (is_type(node->node, prism::ast::FunctionCallNode)) {
         auto func = std::get<prism::ast::FunctionCallNode>(node->node);
-        if (m_items.find(func.name->name) != m_items.end()) {
+        if (CONTAINS(m_items, func.name->name)) {
             auto value = m_items.at(func.name->name);
             if (is_type(value, InvokeFunc)) {
                 std::vector<uintptr_t> args;
