@@ -205,14 +205,19 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         auto right = evaluate(orNode.right);
         bool resLeft = false;
         bool resRight = false;
+        
         if (is_type(left, int)) {
             resLeft = std::get<int>(left) == 1;
-        } else if (is_type(right, int)) {
+        }
+        
+        if (is_type(right, int)) {
             resRight = std::get<int>(right) == 1;
         }
+        
         if (is_type(left, float) || is_type(right, float)) {
             throw SyntaxError("Invalid AND operation, float are not supported");
         }
+        
         return resLeft || resRight;
     } else if (is_type(node->node, prism::ast::AndNode)) {
         auto andNode = std::get<prism::ast::AndNode>(node->node);
@@ -220,13 +225,15 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
         auto right = evaluate(andNode.right);
         bool resLeft = false;
         bool resRight = false;
+        
         if (is_type(left, int)) {
             resLeft = std::get<int>(left) == 1;
         }
+        
         if (is_type(right, int)) {
             resRight = std::get<int>(right) == 1;
         }
-
+        
         if (is_type(left, float) || is_type(right, float)) {
             throw SyntaxError("Invalid AND operation, float are not supported");
         }
