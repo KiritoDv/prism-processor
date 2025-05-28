@@ -115,10 +115,16 @@ bool get_bool(prism::ContextTypes* value) {
     return false;
 }
 
-prism::ContextTypes* append_formula(prism::ContextItems* _, prism::ContextTypes* a_arg, prism::ContextTypes* a_single,
+prism::ContextTypes* append_formula(prism::ContextItems* items, prism::ContextTypes* a_arg, prism::ContextTypes* a_single,
                                     prism::ContextTypes* a_mult, prism::ContextTypes* a_mix,
                                     prism::ContextTypes* a_with_alpha, prism::ContextTypes* a_only_alpha,
                                     prism::ContextTypes* a_alpha, prism::ContextTypes* a_first_cycle) {
+    if (!items->contains("local_var")) {
+        items->insert({"local_var", prism::ContextTypes{0}});
+    }
+    // increase local_var by 1
+    auto& local_var = std::get<int>(items->at("local_var"));
+    local_var++;
     // uint8_t c[2][4] =
     auto c = std::get<prism::MTDArray<int>>(*a_arg);
     bool do_single = get_bool(a_single);
@@ -167,6 +173,23 @@ std::optional<std::string> include_fs(const std::string& path){
     input.close();
 
     return std::string(data.begin(), data.end());
+}
+
+std::string to_string(const prism::ContextTypes& value) {
+    if (std::holds_alternative<int>(value)) {
+        return std::to_string(std::get<int>(value));
+    } else if (std::holds_alternative<float>(value)) {
+        return std::to_string(std::get<float>(value));
+    } else if (std::holds_alternative<std::string>(value)) {
+        return std::get<std::string>(value);
+    } else if (std::holds_alternative<prism::MTDArray<bool>>(value)) {
+        return "MTDArray<bool>";
+    } else if (std::holds_alternative<prism::MTDArray<int>>(value)) {
+        return "MTDArray<int>";
+    } else if (std::holds_alternative<prism::MTDArray<float>>(value)) {
+        return "MTDArray<float>";
+    }
+    return "Unknown type";
 }
 
 int main(int argc, char** argv) {
@@ -287,6 +310,9 @@ int main(int argc, char** argv) {
     processor.populate(vars);
     processor.load(std::string(data.begin(), data.end()));
     SPDLOG_INFO("Processed data: \n{}", processor.process());
+    for (const auto& item : processor.getTypes()) {
+        SPDLOG_INFO("{}: {}", item.first, to_string(item.second));
+    }
     return 0;
 }
 #endif
