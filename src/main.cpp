@@ -23,7 +23,7 @@ enum {
     SHADER_NOISE
 };
 
-prism::ContextTypes* add_text(prism::ContextItems* _, prism::ContextTypes* arg1, prism::ContextTypes* arg2, prism::ContextTypes* arg3) {
+extern "C" prism::ContextTypes* add_text(prism::ContextItems* _, prism::ContextTypes* arg1, prism::ContextTypes* arg2, prism::ContextTypes* arg3) {
     std::string items = "";
     for (int i = 0; i < 3; i++) {
         items += "add";
@@ -115,7 +115,7 @@ bool get_bool(prism::ContextTypes* value) {
     return false;
 }
 
-prism::ContextTypes* append_formula(prism::ContextItems* items, prism::ContextTypes* a_arg, prism::ContextTypes* a_single,
+extern "C" prism::ContextTypes* append_formula(prism::ContextItems* items, prism::ContextTypes* a_arg, prism::ContextTypes* a_single,
                                     prism::ContextTypes* a_mult, prism::ContextTypes* a_mix,
                                     prism::ContextTypes* a_with_alpha, prism::ContextTypes* a_only_alpha,
                                     prism::ContextTypes* a_alpha, prism::ContextTypes* a_first_cycle) {
