@@ -373,12 +373,15 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
             auto value = m_items.at(func.name->name);
             if (is_type(value, InvokeFunc)) {
                 std::vector<uintptr_t> args;
+                args.push_back((uintptr_t) &m_items);
                 for (const auto& arg : *func.args) {
                     ContextTypes type = evaluate(arg);
                     args.push_back((uintptr_t) new ContextTypes{ type });
                 }
                 auto ptr = std::get<InvokeFunc>(value);
                 auto raw = invoke(ptr, args.data(), args.size());
+                // erase the first item which is the context items
+                args.erase(args.begin());
                 for (auto& c : args) {
                     delete (ContextTypes*) c;
                 }
@@ -392,7 +395,7 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
                 }
             }
         }
-        throw SyntaxError("Unsupported function call");
+        throw SyntaxError("Unsupported function call " + func.name->name);
     } else if (is_type(node->node, prism::ast::QuoteNode)) {
         return std::get<prism::ast::QuoteNode>(node->node).value;
     }
