@@ -1,5 +1,7 @@
 @prism(type='fragment', name='Fast3D Fragment Shader', version='1.0.0', description='Ported shader to prism', author='Emill & Prism Team')
 
+// @{"test" + "1"}
+
 @{GLSL_VERSION}
 
 @include("../examples/iftest.fs")

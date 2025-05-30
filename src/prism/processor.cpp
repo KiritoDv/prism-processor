@@ -273,6 +273,10 @@ prism::ContextTypes prism::Processor::evaluate(const std::shared_ptr<prism::ast:
             return std::get<int>(left) + std::get<float>(right);
         }
 
+        if (is_type(left, std::string) && is_type(right, std::string)) {
+            return std::get<std::string>(left) + std::get<std::string>(right);
+        }
+
         throw SyntaxError("Invalid ADD operation");
     } else if (is_type(node->node, prism::ast::SubNode)) {
         auto subNode = std::get<prism::ast::SubNode>(node->node);
