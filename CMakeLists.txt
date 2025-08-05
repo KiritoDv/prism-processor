@@ -55,7 +55,7 @@ if (DEBUG_PARSE)
     add_definitions(-DDEBUG_PARSE)
 endif()
 
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+if(NOT MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "-g")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
     set(CMAKE_CXX_FLAGS "-Wno-narrowing")
@@ -73,7 +73,7 @@ else()
             /W3;
             /${LINK_TYPE}
         >
-        /bigobj
+        # /bigobj
         /permissive-;
         /MP;
         ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
@@ -89,7 +89,7 @@ else()
             /INCREMENTAL:NO;
             /FORCE:MULTIPLE
         >
-        /bigobj;
+        # /bigobj;
         /MANIFEST:NO;
         /DEBUG;
         /SUBSYSTEM:CONSOLE
