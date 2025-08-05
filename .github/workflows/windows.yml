@@ -30,4 +30,4 @@ jobs:
           cd build/x64
           ctest -j -C Debug
       - name: Echo Test Results
-        run: cat build-cmake/Testing/Temporary/LastTest.log
+        run: cat build/x64/Testing/Temporary/LastTest.log
