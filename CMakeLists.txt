@@ -73,7 +73,6 @@ else()
             /W3;
             /${LINK_TYPE}
         >
-        # /bigobj
         /permissive-;
         /MP;
         ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
@@ -89,11 +88,14 @@ else()
             /INCREMENTAL:NO;
             /FORCE:MULTIPLE
         >
-        # /bigobj;
         /MANIFEST:NO;
         /DEBUG;
         /SUBSYSTEM:CONSOLE
     )
+    if (NOT "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+        target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
+        target_link_options(${PROJECT_NAME} PRIVATE /bigobj)
+    endif()
 
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
@@ -121,7 +123,14 @@ if(PRISM_STANDALONE)
 	target_link_libraries(${PROJECT_NAME} PRIVATE spdlog)
 else()
 	find_package(spdlog QUIET)
-	target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog)
+    if (NOT spdlog_FOUND)
+        FetchContent_Declare(
+            spdlog
+            GIT_REPOSITORY https://github.com/gabime/spdlog.git
+            GIT_TAG 7e635fca68d014934b4af8a1cf874f63989352b7
+        )
+    endif()
+    target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog)
 endif()
 
 if(NOT PRISM_STANDALONE)
