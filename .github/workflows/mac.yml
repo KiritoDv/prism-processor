@@ -14,7 +14,8 @@ jobs:
         config: [Release, Debug]
         standalone: [OFF, ON]
         toolchain: [macos-clang, macos-gnu] # remove temporary macos-clang-llvm
-        isPR: ${{ github.event_name == 'pull_request' }}
+        isPR:
+          - ${{ github.event_name == 'pull_request' }}
         exclude:
           - isPR: true
             standalone: OFF
