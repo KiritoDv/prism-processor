@@ -123,14 +123,6 @@ if(PRISM_STANDALONE)
 	target_link_libraries(${PROJECT_NAME} PRIVATE spdlog)
 else()
 	find_package(spdlog QUIET)
-    if (NOT spdlog_FOUND)
-        FetchContent_Declare(
-            spdlog
-            GIT_REPOSITORY https://github.com/gabime/spdlog.git
-            GIT_TAG 7e635fca68d014934b4af8a1cf874f63989352b7
-        )
-        FetchContent_MakeAvailable(spdlog)
-    endif()
     target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog)
 endif()
 
