@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: brew install cmake ninja xcodes
+        run: brew install cmake ninja xcodes spdlog
       - name: Download llvm
         if: ${{ matrix.toolchain == 'macos-clang-llvm' }}
         run: |
