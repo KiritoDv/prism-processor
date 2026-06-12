@@ -101,11 +101,17 @@ struct GeneratedRange {
 struct SettingDecl {
     std::string var;
     std::string name;
-    std::string type;
+    std::string type; // "float" (default), "int", "toggle", "enum", "color"
     float def = 0.0f;
     float min = 0.0f;
     float max = 0.0f;
     float step = 0.0f;
+    // type == "enum": parallel label/value lists parsed from
+    // options='Label A:0|Label B:1'; def selects by value.
+    std::vector<std::string> optionLabels;
+    std::vector<float> optionValues;
+    // type == "color": RGB default parsed from default='r, g, b'
+    float defColor[3] = { 0.0f, 0.0f, 0.0f };
 };
 
 std::string format_float_literal(float v);

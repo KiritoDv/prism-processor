@@ -725,6 +725,9 @@ prism::Node prism::Processor::parse(std::string input) {
                     }
                     auto raw = get_parenthesis(c, input.end());
                     previous = c;
+                    // Collect args first: `type` decides how `default`/`options`
+                    // are interpreted and may appear in any order.
+                    std::string aDefault, aOptions;
                     SettingDecl decl{};
                     decl.type = "float";
                     for (const auto& [key, value] : parse_setting_args(raw.substr(1, raw.size() - 2))) {
@@ -735,7 +738,9 @@ prism::Node prism::Processor::parse(std::string input) {
                         } else if (key == "type") {
                             decl.type = value;
                         } else if (key == "default") {
-                            decl.def = std::stof(value);
+                            aDefault = value;
+                        } else if (key == "options") {
+                            aOptions = value;
                         } else if (key == "min") {
                             decl.min = std::stof(value);
                         } else if (key == "max") {
@@ -752,11 +757,47 @@ prism::Node prism::Processor::parse(std::string input) {
                     if (decl.name.empty()) {
                         decl.name = decl.var;
                     }
+                    if (decl.type == "enum") {
+                        // options='Label A:0|Label B:1|Label C:2'
+                        std::string item;
+                        std::stringstream ss(aOptions);
+                        while (std::getline(ss, item, '|')) {
+                            auto colon = item.rfind(':');
+                            if (colon == std::string::npos) {
+                                throw SyntaxError("@setting: enum option missing ':value' in '" + item + "'");
+                            }
+                            decl.optionLabels.push_back(gv::trim(item.substr(0, colon)));
+                            decl.optionValues.push_back(std::stof(item.substr(colon + 1)));
+                        }
+                        if (decl.optionValues.empty()) {
+                            throw SyntaxError("@setting: enum requires options=");
+                        }
+                    }
+                    if (decl.type == "color") {
+                        // default='r, g, b' (0..1 components)
+                        std::string comp;
+                        std::stringstream ss(aDefault);
+                        int i = 0;
+                        while (std::getline(ss, comp, ',') && i < 3) {
+                            decl.defColor[i++] = std::stof(comp);
+                        }
+                    } else if (!aDefault.empty()) {
+                        decl.def = std::stof(aDefault);
+                    }
                     m_settings.push_back(decl);
                     if (!CONTAINS(m_items, decl.var)) {
                         if (decl.type == "toggle") {
                             // @if(VAR) requires an int that equals exactly 1
                             m_items[decl.var] = ContextTypes{ decl.def != 0.0f ? 1 : 0 };
+                        } else if (decl.type == "int" || decl.type == "enum") {
+                            // ints emit without a decimal and support @if(VAR == n)
+                            m_items[decl.var] = ContextTypes{ (int)decl.def };
+                        } else if (decl.type == "color") {
+                            // Component list; templates wrap it: vec3(@{VAR})
+                            m_items[decl.var] =
+                                ContextTypes{ format_float_literal(decl.defColor[0]) + ", " +
+                                              format_float_literal(decl.defColor[1]) + ", " +
+                                              format_float_literal(decl.defColor[2]) };
                         } else {
                             // Pre-formatted so @{VAR} emits a valid GLSL float
                             // literal; the float path drops the ".0"
