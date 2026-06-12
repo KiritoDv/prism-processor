@@ -5,6 +5,16 @@
 #include "utils/exceptions.h"
 #include "utils/gv.h"
 
+std::string prism::format_float_literal(float v) {
+    char buf[64];
+    std::snprintf(buf, sizeof(buf), "%.9g", v);
+    std::string s(buf);
+    if (s.find_first_of(".eE") == std::string::npos) {
+        s += ".0";
+    }
+    return s;
+}
+
 void prism::Processor::populate(const ContextItems& items) {
     if (CONTAINS(items, "@if")) {
         throw SyntaxError("Reserved keyword if");
@@ -75,6 +85,7 @@ std::string prism::Processor::parse_header(const std::string& data) {
 }
 
 void prism::Processor::load(const std::string& data) {
+   m_settings.clear();
    m_input = parse_header(data);
 }
 
@@ -428,6 +439,47 @@ std::string get_parenthesis(std::string::iterator& c, std::string::iterator end)
     return { start, c };
 }
 
+static std::vector<std::pair<std::string, std::string>> parse_setting_args(const std::string& inner) {
+    std::vector<std::string> parts;
+    std::string cur;
+    bool inQuote = false;
+    for (char ch : inner) {
+        if (ch == '\'') {
+            inQuote = !inQuote;
+            cur += ch;
+        } else if (ch == ',' && !inQuote) {
+            parts.push_back(cur);
+            cur.clear();
+        } else {
+            cur += ch;
+        }
+    }
+    if (inQuote) {
+        throw prism::SyntaxError("@setting: unterminated quote");
+    }
+    if (!prism::gv::trim(cur).empty()) {
+        parts.push_back(cur);
+    }
+
+    std::vector<std::pair<std::string, std::string>> out;
+    for (const auto& part : parts) {
+        auto eq = part.find('=');
+        if (eq == std::string::npos) {
+            throw prism::SyntaxError("@setting: expected key=value, got '" + prism::gv::trim(part) + "'");
+        }
+        auto key = prism::gv::trim(part.substr(0, eq));
+        auto value = prism::gv::trim(part.substr(eq + 1));
+        if (value.size() >= 2 && value.front() == '\'' && value.back() == '\'') {
+            value = value.substr(1, value.size() - 2);
+        }
+        if (key.empty()) {
+            throw prism::SyntaxError("@setting: empty key");
+        }
+        out.emplace_back(key, value);
+    }
+    return out;
+}
+
 std::shared_ptr<prism::ast::ASTNode> parse_parenthesis(std::string::iterator& c, std::string::iterator end) {
     prism::lexer::Lexer eval(get_parenthesis(c, end));
     auto tokens = eval.tokenize();
@@ -664,6 +716,54 @@ prism::Node prism::Processor::parse(std::string input) {
                     previous = c;
                     end = input.end();
                     continue;
+                } else if (expr == "setting") {
+                    if (c == input.end() || *c != '(') {
+                        children->push_back(
+                            std::make_shared<prism::Node>(prism::TextNode{ std::string("@setting") }, current));
+                        previous = c;
+                        continue;
+                    }
+                    auto raw = get_parenthesis(c, input.end());
+                    previous = c;
+                    SettingDecl decl{};
+                    decl.type = "float";
+                    for (const auto& [key, value] : parse_setting_args(raw.substr(1, raw.size() - 2))) {
+                        if (key == "var") {
+                            decl.var = value;
+                        } else if (key == "name") {
+                            decl.name = value;
+                        } else if (key == "type") {
+                            decl.type = value;
+                        } else if (key == "default") {
+                            decl.def = std::stof(value);
+                        } else if (key == "min") {
+                            decl.min = std::stof(value);
+                        } else if (key == "max") {
+                            decl.max = std::stof(value);
+                        } else if (key == "step") {
+                            decl.step = std::stof(value);
+                        } else {
+                            throw SyntaxError("@setting: unknown argument '" + key + "'");
+                        }
+                    }
+                    if (decl.var.empty()) {
+                        throw SyntaxError("@setting: missing var=");
+                    }
+                    if (decl.name.empty()) {
+                        decl.name = decl.var;
+                    }
+                    m_settings.push_back(decl);
+                    if (!CONTAINS(m_items, decl.var)) {
+                        if (decl.type == "toggle") {
+                            // @if(VAR) requires an int that equals exactly 1
+                            m_items[decl.var] = ContextTypes{ decl.def != 0.0f ? 1 : 0 };
+                        } else {
+                            // Pre-formatted so @{VAR} emits a valid GLSL float
+                            // literal; the float path drops the ".0"
+                            m_items[decl.var] = ContextTypes{ format_float_literal(decl.def) };
+                        }
+                    }
+                    continue;
                 }
             }
         }
@@ -798,6 +898,7 @@ void print_node(const prism::Node& node, int depth = 0) {
 }
 
 std::string prism::Processor::process() {
+    m_settings.clear();
     auto node = parse(m_input);
 #ifdef DEBUG_PARSE
     for (const auto& child : *std::get<prism::RootNode>(node.node).children) {

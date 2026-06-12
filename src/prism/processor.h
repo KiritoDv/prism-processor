@@ -98,6 +98,18 @@ struct GeneratedRange {
     size_t end;
 };
 
+struct SettingDecl {
+    std::string var;
+    std::string name;
+    std::string type;
+    float def = 0.0f;
+    float min = 0.0f;
+    float max = 0.0f;
+    float step = 0.0f;
+};
+
+std::string format_float_literal(float v);
+
 struct ForContext {
     std::string name;
     std::variant<GeneratedRange, MTDArray<bool>, MTDArray<int>, MTDArray<float>> iterator;
@@ -179,6 +191,10 @@ class Processor {
     ContextItems getTypes() {
         return this->m_items;
     }
+
+    const std::vector<SettingDecl>& settings() const {
+        return m_settings;
+    }
     void bind_include_loader(IncludeFunc func){
         m_include_loader = func;
     }
@@ -195,6 +211,7 @@ class Processor {
 
   private:
     ContextItems m_items;
+    std::vector<SettingDecl> m_settings;
     RuntimeContext m_context;
     std::stringstream m_output;
     std::string m_input;
