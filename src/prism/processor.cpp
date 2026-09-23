@@ -1,7 +1,9 @@
 #include "processor.h"
 
 #include <spdlog/spdlog.h>
+#include <mutex>
 #include <sstream>
+#include <unordered_map>
 #include "utils/exceptions.h"
 #include "utils/gv.h"
 
@@ -581,7 +583,7 @@ prism::Node prism::Processor::parse(std::string input) {
                     children->push_back(
                         std::make_shared<prism::Node>(prism::TextNode{ std::string(previous, c + 1) }, current));
                     previous = c;
-                    current = current->parent;
+                    current = current->parent.lock();
                     children = get_children(current);
                 }
             }
@@ -626,10 +628,10 @@ prism::Node prism::Processor::parse(std::string input) {
                     }
 
                     if (is_type(ifNode->node, prism::ElseIfNode)) {
-                        ifNode = std::get<prism::ElseIfNode>(ifNode->node).parentIf;
+                        ifNode = std::get<prism::ElseIfNode>(ifNode->node).parentIf.lock();
                     }
 
-                    current = ifNode->parent;
+                    current = ifNode->parent.lock();
 
                     auto newNode = std::make_shared<prism::Node>(
                         prism::ElseNode{ std::make_shared<std::vector<std::shared_ptr<prism::Node>>>() }, current);
@@ -657,10 +659,10 @@ prism::Node prism::Processor::parse(std::string input) {
                     }
 
                     if (is_type(ifNode->node, prism::ElseIfNode)) {
-                        ifNode = std::get<prism::ElseIfNode>(ifNode->node).parentIf;
+                        ifNode = std::get<prism::ElseIfNode>(ifNode->node).parentIf.lock();
                     }
 
-                    current = ifNode->parent;
+                    current = ifNode->parent.lock();
 
                     auto ast = parse_parenthesis(c, input.end());
                     previous = c;
@@ -695,7 +697,7 @@ prism::Node prism::Processor::parse(std::string input) {
                     if (current == root) {
                         throw prism::SyntaxError("Unmatched end at " + input.substr(previous - input.begin()));
                     }
-                    current = current->parent;
+                    current = current->parent.lock();
                     children = get_children(current);
                     previous = c;
                 } else if(expr == "include") {
@@ -938,18 +940,41 @@ void print_node(const prism::Node& node, int depth = 0) {
     }
 }
 
+namespace {
+std::mutex& template_cache_mutex() {
+    static std::mutex mutex;
+    return mutex;
+}
+
+std::unordered_map<std::string, std::shared_ptr<prism::Node>>& template_cache() {
+    static std::unordered_map<std::string, std::shared_ptr<prism::Node>> cache;
+    return cache;
+}
+} // namespace
+
+void prism::Processor::clear_template_cache() {
+    std::lock_guard<std::mutex> lock(template_cache_mutex());
+    template_cache().clear();
+}
+
 std::string prism::Processor::process() {
     m_settings.clear();
-    auto node = parse(m_input);
+    std::shared_ptr<prism::Node> root;
+    {
+        std::lock_guard<std::mutex> lock(template_cache_mutex());
+        auto& slot = template_cache()[m_input];
+        if (slot == nullptr) {
+            slot = std::make_shared<prism::Node>(parse(m_input));
+        }
+        root = slot;
+    }
+    auto& node = *root;
 #ifdef DEBUG_PARSE
     for (const auto& child : *std::get<prism::RootNode>(node.node).children) {
         print_node(*child);
     }
 #endif
     evaluate_node(std::get<prism::RootNode>(node.node).children);
-    for (const auto& child : *std::get<prism::RootNode>(node.node).children) {
-        delete_node((std::shared_ptr<prism::Node>&) child);
-    }
 
     std::stringstream result;
     auto lines = gv::new_line_split(m_output.str());

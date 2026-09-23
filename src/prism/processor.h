@@ -151,7 +151,7 @@ struct ElseNode {
 struct ElseIfNode {
     std::shared_ptr<ast::ASTNode> condition;
     std::shared_ptr<std::vector<std::shared_ptr<Node>>> children;
-    std::shared_ptr<Node> parentIf;
+    std::weak_ptr<Node> parentIf;
 };
 struct IfNode {
     std::shared_ptr<ast::ASTNode> condition;
@@ -174,7 +174,7 @@ class Node {
     Node(NodeType node, std::shared_ptr<Node> parent) : node(std::move(node)), parent(std::move(parent)) {
     }
     NodeType node;
-    std::shared_ptr<Node> parent;
+    std::weak_ptr<Node> parent;
     int depth = 0;
 };
 
@@ -189,6 +189,7 @@ class Processor {
   public:
     void populate(const ContextItems& items);
     void load(const std::string& input);
+    static void clear_template_cache();
     std::string parse_header(const std::string& data);
     prism::Node parse(std::string input);
     ContextTypes evaluate(const std::shared_ptr<prism::ast::ASTNode>& node);
