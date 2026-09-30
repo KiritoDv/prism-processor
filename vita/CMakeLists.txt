@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.16)
+project(prism_vita C CXX)
+set(PRISM_STANDALONE OFF CACHE BOOL "" FORCE)
+set(CMAKE_DISABLE_FIND_PACKAGE_spdlog TRUE)
+add_library(spdlog::spdlog INTERFACE IMPORTED)
+set_property(TARGET spdlog::spdlog PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/../vendor/spdlog/include")
+add_subdirectory(.. prism)
+target_compile_options(prism PRIVATE -fno-short-enums -fsigned-char)
