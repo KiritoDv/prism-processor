@@ -116,7 +116,7 @@ if(PRISM_STANDALONE)
 	FetchContent_Declare(
 		spdlog
 		GIT_REPOSITORY https://github.com/gabime/spdlog.git
-		GIT_TAG 7e635fca68d014934b4af8a1cf874f63989352b7
+		GIT_TAG 6fa36017cfd5731d617e1a934f0e5ea9c4445b13 # v1.15.3
 	)
 
 	FetchContent_MakeAvailable(spdlog)
